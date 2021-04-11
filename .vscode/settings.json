@@ -1,0 +1,4 @@
+{
+    "python.pythonPath": "backend\\env\\Scripts\\python.exe",
+    "python.autoComplete.extraPaths": ["./backend"]
+}
