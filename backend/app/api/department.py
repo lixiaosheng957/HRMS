@@ -1,11 +1,13 @@
 from flask import current_app, jsonify, g, request
+
+from app.libs.expection import DatabaseRecordRepeat
 from app.libs.redprint import Redprint
 from app.models.base import db
 from app.models.department import Department, department_schema, departments_schema
 from app.libs.token_auth import login_required
-from app.libs.status_code import Success, ParameterException
+from app.libs.status_code import Success, ParameterException, DeleteSuccess
 from marshmallow import ValidationError
-from sqlalchemy import and_, or_
+from sqlalchemy import and_
 
 api = Redprint('department')
 
@@ -14,12 +16,17 @@ api = Redprint('department')
 @login_required(["admin"])
 def add_department():
     json_data = request.get_json()
+    # print(json_data)
     if not json_data:
         return ParameterException()
     try:
         data = department_schema.load(json_data)
+        if Department.query.filter_by(name=data['name']).first():
+            raise DatabaseRecordRepeat()
     except ValidationError as err:
         return ParameterException(msg=err.messages)
+    except DatabaseRecordRepeat as err:
+        return ParameterException(msg=err.msg)
     with db.auto_commit():
         department = Department()
         for key, value in data.items():
@@ -45,30 +52,46 @@ def get_department_list():
     else:
         department_list = Department.query.filter_by().all()
         result = departments_schema.dump(department_list)
+        # print(result)
+        return_json = []
         for index, item in enumerate(result):
-            if not item['isParent']:
-                del result[index]
-            else:
-                department_serializing(item)
-        return jsonify(result)
+            if not item['parentId']:
+                return_json.append(item)
+        for item in return_json:
+            department_serializing(item)
+        return jsonify(return_json)
 
 
-@api.route('/delete')
+@api.route('/get')
+@login_required(["admin"])
+def get_department():
+    department_id = request.args.get('id')
+    if not department_id:
+        return ParameterException()
+    department = Department.query.filter_by(id=department_id).first_or_404()
+    result = department_schema.dump(department)
+    return jsonify(result)
+
+
+@api.route('/delete', methods=['POST'])
 @login_required(["admin"])
 def delete_department():
     department_id = request.get_json()['id']
     if not department_id:
         return ParameterException()
     department = Department.query.filter_by(id=department_id).first_or_404()
+    if len(department.children) > 0:
+        return ParameterException(msg="该部门员工数不为零，不能删除")
     with db.auto_commit():
         department.status = 0
-    return Success()
+    return DeleteSuccess()
 
 
-@api.route('modify')
+@api.route('/modify', methods=['POST'])
 @login_required(["admin"])
 def modify_department():
     json_data = request.get_json()
+    print(json_data)
     if not json_data:
         return ParameterException()
     try:
@@ -78,7 +101,8 @@ def modify_department():
     department = Department.query.filter_by(id=data['id']).first_or_404()
     with db.auto_commit():
         for key, value in data.items():
-            setattr(department, key, value)
+            if value and key != "id":
+                setattr(department, key, value)
     return Success()
 
 

@@ -15,3 +15,19 @@ export function addEmployee(data) {
     data: data
   })
 }
+
+export function getEmployee(params) {
+  return request({
+    url: '/employee/get-employee',
+    method: 'get',
+    params: { ...params }
+  })
+}
+
+export function editEmployee(data) {
+  return request({
+    url: '/employee/modify',
+    method: 'post',
+    data: data
+  })
+}

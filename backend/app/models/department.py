@@ -1,6 +1,6 @@
-from app.models.base import Base, db
+from app.models.base import Base, db, BaseQuery
 from sqlalchemy import Column, Table, Integer, ForeignKey, String, DateTime, Enum, Boolean
-from marshmallow import Schema, fields, validate, ValidationError, pre_dump
+from marshmallow import Schema, fields, validate, ValidationError, pre_dump, post_dump
 from marshmallow.utils import is_collection
 
 
@@ -26,13 +26,18 @@ class DepartmentSchema(Schema):
     depPath = fields.Str()
     enabled = fields.Boolean()
     leader = fields.Str()
-    isParent = fields.Boolean()
+    # isParent = fields.Boolean()
     children = fields.List(fields.Nested(lambda: DepartmentSchema()))
 
-    @pre_dump
-    def pre_deal(self, data, **kwargs):
-        # print(type(data))
-        return data
+    def get_attribute(self, obj, key, default):
+        if key == 'children':
+            return_children = []
+            for item in getattr(obj, key):
+                if item.status == 1:
+                    return_children.append(item)
+            return return_children
+        else:
+            return getattr(obj, key)
 
 
 department_schema = DepartmentSchema()

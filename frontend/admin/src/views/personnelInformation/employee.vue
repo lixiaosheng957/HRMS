@@ -16,7 +16,7 @@
       </el-header>
       <el-container>
         <el-aside width="180px">
-          <el-tree :data="departments" default-expand-all @node-click="handleClickDepartment" />
+          <el-tree :data="departments" default-expand-all :expand-on-click-node="false" @node-click="handleClickDepartment" />
         </el-aside>
         <el-main>
           <el-table v-loading="listLoading" :data="employeeList" border height="500" fit element-loading-text="加载中">
@@ -26,14 +26,16 @@
             <el-table-column prop="phone" label="电话" align="center" width="200" />
             <el-table-column prop="job" label="职位" align="center" width="200" />
             <el-table-column label="操作" align="center">
-              <template>
-                <el-button type="primary" size="mini">修改</el-button>
-                <el-button type="primary" size="mini">详情</el-button>
+              <template slot-scope="scope">
+                <el-button type="primary" size="mini" round @click="handleEidtEmployee(scope.row)">修改</el-button>
+                <el-button type="primary" size="mini" round @click="showDetail(scope.row)">详情</el-button>
+                <el-button type="primary" size="mini" round>调动</el-button>
+                <el-button type="danger" size="mini" round>离职</el-button>
               </template>
             </el-table-column>
           </el-table>
         </el-main>
-        <el-dialog title="添加员工" :visible.sync="showAddForm" width="50%">
+        <el-dialog title="添加员工" :visible.sync="showAddForm" width="50%" top="10vh">
           <el-form ref="addEmployeeForm" :model="addEmployeeForm" label-width="90px" :rules="rules">
             <el-row>
               <el-col :span="12">
@@ -188,8 +190,15 @@
               </el-col>
             </el-row>
             <el-row>
+              <el-col :span="24">
+                <el-form-item label="居住地址" required prop="address">
+                  <el-input v-model="addEmployeeForm.address" type="text" placeholder="请输入住址" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
               <el-col :span="4" :offset="16">
-                <el-button type="primary" @click="submitAddEmployee('addEmployeeForm')">提交</el-button>
+                <el-button type="primary" @click="submitForm('addEmployeeForm')">提交</el-button>
               </el-col>
               <el-col :span="4">
                 <el-button @click="resetForm('addEmployeeForm')">重置</el-button>
@@ -197,13 +206,104 @@
             </el-row>
           </el-form>
         </el-dialog>
+        <el-dialog title="编辑员工" :visible.sync="showEditForm" width="40%" top="10vh">
+          <el-form ref="editEmployeeForm" :model="editEmployeeForm" label-width="90px" :rules="rules">
+            <el-form-item label="婚姻状况" prop="wedlock">
+              <el-radio v-model="editEmployeeForm.wedlock" label="未婚" />
+              <el-radio v-model="editEmployeeForm.wedlock" label="已婚" />
+              <el-radio v-model="editEmployeeForm.wedlock" label="离异" />
+            </el-form-item>
+            <el-form-item label="手机号" prop="phone">
+              <el-input
+                v-model="editEmployeeForm.phone"
+                type="text"
+                placeholder="请输入手机号"
+              />
+            </el-form-item>
+            <el-form-item label="邮箱" required prop="email">
+              <el-input
+                v-model="editEmployeeForm.email"
+                type="text"
+                placeholder="请输入邮箱"
+              />
+            </el-form-item>
+            <el-form-item label="居住地址" required prop="address">
+              <el-input v-model="editEmployeeForm.address" type="text" placeholder="请输入住址" />
+            </el-form-item>
+            <el-row>
+              <el-col :span="4" :offset="16">
+                <el-button type="primary" @click="submitForm('editEmployeeForm')">提交</el-button>
+              </el-col>
+              <el-col :span="4">
+                <el-button @click="resetForm('editEmployeeForm')">重置</el-button>
+              </el-col>
+            </el-row>
+          </el-form>
+        </el-dialog>
+        <el-drawer title="员工详情" :visible.sync="showDetailView" direction="rtl" size="30%">
+          <div class="detail-container">
+            <el-form label-width="100px">
+              <el-form-item label="姓名">
+                <span>{{ deatil.name }}</span>
+              </el-form-item>
+              <el-form-item label="性别">
+                <span>{{ deatil.gender }}</span>
+              </el-form-item>
+              <el-form-item label="民族">
+                <span>{{ deatil.nation }}</span>
+              </el-form-item>
+              <el-form-item label="籍贯">
+                <span>{{ deatil.nativePlace }}</span>
+              </el-form-item>
+              <el-form-item label="生日">
+                <span>{{ deatil.birthday }}</span>
+              </el-form-item>
+              <el-form-item label="身份证号">
+                <span>{{ deatil.idCard }}</span>
+              </el-form-item>
+              <el-form-item label="婚姻状况">
+                <span>{{ deatil.wedlock }}</span>
+              </el-form-item>
+              <el-form-item label="邮箱">
+                <span>{{ deatil.email }}</span>
+              </el-form-item>
+              <el-form-item label="手机号">
+                <span>{{ deatil.phone }}</span>
+              </el-form-item>
+              <el-form-item label="学历">
+                <span>{{ deatil.tipTopDegree }}</span>
+              </el-form-item>
+              <el-form-item label="毕业院校">
+                <span>{{ deatil.school }}</span>
+              </el-form-item>
+              <el-form-item label="所学专业">
+                <span>{{ deatil.specialty }}</span>
+              </el-form-item>
+              <el-form-item label="参加工作时间">
+                <span>{{ deatil.workAge }}年</span>
+              </el-form-item>
+              <el-form-item label="在岗状态">
+                <span>{{ deatil.workState }}</span>
+              </el-form-item>
+              <el-form-item label="所属部门">
+                <span>{{ deatil.department }}</span>
+              </el-form-item>
+              <el-form-item label="职位">
+                <span>{{ deatil.job }}</span>
+              </el-form-item>
+              <el-form-item label="居住地址">
+                <span>{{ deatil.address }}</span>
+              </el-form-item>
+            </el-form>
+          </div>
+        </el-drawer>
       </el-container>
     </el-container>
   </div>
 </template>
 
 <script>
-import { getEmployeeList, addEmployee } from '@/api/employee'
+import { getEmployeeList, addEmployee, getEmployee, editEmployee } from '@/api/employee'
 import { tipTopDegree, nation } from '@/utils/infoList'
 import { getDepartments } from '@/api/department'
 import { getJobList } from '@/api/job'
@@ -248,6 +348,8 @@ export default {
       departments: [],
       showFilter: false,
       showAddForm: false,
+      showEditForm: false,
+      showDetailView: false,
       addEmployeeForm: {
         name: '',
         gender: '',
@@ -265,7 +367,8 @@ export default {
         type: '正式员工',
         workState: '在职',
         departmentId: null,
-        jobLevelId: null
+        jobLevelId: null,
+        address: ''
       },
       rules: {
         name: [{ required: true, message: '员工姓名不能为空', trigger: 'blur' }],
@@ -282,12 +385,40 @@ export default {
         workAge: [{ required: true, message: '工作时间不能为空', trigger: 'blur' }],
         idCard: [{ validator: checkIdCard, trigger: 'blur' }],
         departmentId: [{ required: true, message: '所属部门不能为空', trigger: 'blur' }],
-        jobLevelId: [{ required: true, message: '职位不能为空', trigger: 'blur' }]
+        jobLevelId: [{ required: true, message: '职位不能为空', trigger: 'blur' }],
+        address: [{ required: true, message: '居住地址不能为空', trigger: 'blur' }]
+      },
+      editEmployeeForm: {
+        id: null,
+        wedlock: '',
+        phone: '',
+        email: '',
+        address: ''
       },
       nationList: nation,
       tipTopDegreeList: tipTopDegree,
       departmentSelectList: [],
-      jobSelectList: []
+      jobSelectList: [],
+      deatil: {
+        name: '',
+        gender: '',
+        nation: '',
+        nativePlace: '',
+        birthday: null,
+        idCard: '',
+        email: '',
+        wedlock: '',
+        phone: '',
+        workAge: null,
+        tipTopDegree: '',
+        school: '',
+        specialty: '',
+        type: '正式员工',
+        workState: '在职',
+        department: '',
+        job: '',
+        address: ''
+      }
     }
   },
   async created() {
@@ -356,21 +487,37 @@ export default {
         console.log(error)
       }
     },
-    submitAddEmployee(formNmae) {
-      console.log(this.addEmployeeForm)
-      this.$refs[formNmae].validate(async(valid) => {
+    submitForm(formName) {
+      this.$refs[formName].validate(async(valid) => {
         if (valid) {
-          try {
-            await addEmployee(this.addEmployeeForm)
-            Message({
-              message: '添加成功',
-              type: 'success',
-              duration: '2000'
-            })
-            this.showAddForm = false
-            this.resetForm(formNmae)
-          } catch (error) {
-            console.log(error)
+          if (this.showAddForm) {
+            try {
+              await addEmployee(this.addEmployeeForm)
+              Message({
+                message: '添加成功',
+                type: 'success',
+                duration: '2000'
+              })
+              this.showAddForm = false
+              this.resetForm(formName)
+            } catch (error) {
+              console.log(error)
+            }
+          }
+          if (this.showEditForm) {
+            try {
+              await editEmployee(this.editEmployeeForm)
+              Message({
+                message: '修改成功',
+                type: 'success',
+                duration: '2000'
+              })
+              this.showEditForm = false
+              this.resetForm(formName)
+              this.editEmployeeForm.id = null
+            } catch (error) {
+              console.log(error)
+            }
           }
         } else {
           console.log('error submit!!')
@@ -380,11 +527,34 @@ export default {
     },
     resetForm(formName) {
       this.$refs[formName].resetFields()
+    },
+    async handleEidtEmployee({ id }) {
+      this.showEditForm = true
+      try {
+        const res = await getEmployee({ id })
+        Object.keys(this.editEmployeeForm).forEach(key => {
+          this.editEmployeeForm[key] = res[key]
+        })
+        this.editEmployeeForm.id = id
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    async showDetail({ id }) {
+      this.showDetailView = true
+      try {
+        this.deatil = await getEmployee({ id })
+      } catch (error) {
+        console.log(error)
+      }
     }
   }
 }
 </script>
 
-<style>
-
+<style lang="scss" scoped>
+.detail-container{
+  height: calc(100vh - 44.4px);
+  overflow: scroll;
+}
 </style>

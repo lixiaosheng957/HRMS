@@ -20,7 +20,7 @@ def add_job_level():
         data = job_level_schema.load(json_data)
     except ValidationError as err:
         return ParameterException(msg=err.messages)
-    job_level = JobLevel.query.filter(JobLevel.name == data['name']).first()
+    job_level = JobLevel.query.filter_by(name=data['name']).first()
     if job_level and job_level.status:
         return ParameterException(msg="重复职位!")
     elif job_level and job_level.status == 0:
@@ -55,13 +55,13 @@ def modify_job_level():
     return Success()
 
 
-@api.route('/delete')
+@api.route('/delete', methods=['POST'])
 @login_required(['admin'])
 def delete_job_level():
     job_level_id = request.get_json()['id']
     if not job_level_id:
         return ParameterException()
-    job_level = JobLevel.query.filter_by(id=job_level_id).fitst_or_404()
+    job_level = JobLevel.query.filter_by(id=job_level_id).first_or_404()
 
     if len(job_level.employee) > 0:
         return ParameterException(msg="删除失败，该职位员工数量不为零！")

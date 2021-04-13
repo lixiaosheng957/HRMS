@@ -39,13 +39,14 @@ def modify_employee():
     if not json_data:
         return ParameterException()
     try:
-        data = employee_schema.load(json_data)
+        data = employee_schema.load(json_data, partial=True)
     except ValidationError as err:
         return ParameterException(msg=err.messages)
     employee = Employee.query.filter_by(id=data['id']).first_or_404()
     with db.auto_commit():
         for key, value in data.items():
-            setattr(employee, key, value)
+            if key in ['wedlock', 'phone', 'email', 'address']:
+                setattr(employee, key, value)
     return Success()
 
 
@@ -75,6 +76,8 @@ def get_employee():
     employee_id = int(request.args.get('id'))
     employee = Employee.query.filter_by(id=employee_id).first_or_404()
     result = employee_schema.dump(employee)
+    result['department'] = employee.department.name
+    result['job'] = employee.job_level.name
     return jsonify(result)
 
 
@@ -104,3 +107,6 @@ def delete_employee():
     with db.auto_commit():
         employee.status = 0
     return DeleteSuccess()
+
+
+@api.route('/')

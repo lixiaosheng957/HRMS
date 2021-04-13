@@ -10,7 +10,7 @@
             <el-button type="primary" :icon="showFilter?'el-icon-arrow-up':'el-icon-arrow-down'" @click="showFilter=!showFilter">筛选</el-button>
           </el-col>
           <el-col :span="2">
-            <el-button type="primary" icon="el-icon-plus" @click="showjobForm = true">添加职位</el-button>
+            <el-button type="primary" icon="el-icon-plus" @click="showAddForm = true">添加职位</el-button>
           </el-col>
         </el-row>
       </el-header>
@@ -56,20 +56,19 @@
           <el-table-column prop="titleLevel" label="职位等级" align="center" width="250" />
           <el-table-column prop="number" label="职位人数" align="center" width="120" />
           <el-table-column label="操作" align="center">
-            <template>
-              <el-button type="primary" size="mini">修改</el-button>
-              <el-button type="primary" size="mini">查看员工列表</el-button>
+            <template slot-scope="scope">
+              <el-button type="danger" size="mini" @click="deletJob(scope.row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-main>
-      <el-dialog :title="showAddJobForm?'添加职位':'修改职位'" :visible.sync="showjobForm" width="40%">
-        <el-form ref="addJobFrom" :model="jobForm" :rules="rules">
+      <el-dialog title="添加职位" :visible.sync="showAddForm" width="40%">
+        <el-form ref="addJobFrom" :model="addForm" :rules="rules">
           <el-form-item label="职位名称" label-width="90px" prop="name">
-            <el-input v-model="jobForm.name" type="text" placeholder="请输入职位名称" />
+            <el-input v-model="addForm.name" type="text" placeholder="请输入职位名称" />
           </el-form-item>
           <el-form-item label="职位等级" label-width="90px" prop="titleLevel">
-            <el-select v-model="jobForm.titleLevel" placeholder="请选择职位等级" clearable>
+            <el-select v-model="addForm.titleLevel" placeholder="请选择职位等级" clearable>
               <el-option
                 v-for="item in titleLevelList"
                 :key="item.value"
@@ -80,7 +79,7 @@
           </el-form-item>
           <el-form-item label="所属部门" label-width="90px" prop="departmentId">
             <el-select
-              v-model="jobForm.departmentId"
+              v-model="addForm.departmentId"
               placeholder="请输入关键词"
               filterable
               clearable
@@ -99,7 +98,7 @@
           <el-form-item>
             <el-row>
               <el-col :span="4" :offset="16">
-                <el-button type="primary" @click="submitAddJobForm('addJobFrom')">添加</el-button>
+                <el-button type="primary" @click="submitAddForm('addJobFrom')">添加</el-button>
               </el-col>
               <el-col :span="4">
                 <el-button @click="resetForm('addJobFrom')">重置</el-button>
@@ -113,9 +112,9 @@
 </template>
 
 <script>
-import { getJobList, addJob } from '@/api/job'
+import { getJobList, addJob, deleteJob } from '@/api/job'
 import { getDepartments } from '@/api/department'
-import { Message } from 'element-ui'
+import { Message, MessageBox } from 'element-ui'
 export default {
   name: 'Rank',
   data() {
@@ -135,10 +134,8 @@ export default {
       },
       selectLoading: false,
       selectItems: [],
-      showJobForm: false,
-      showAddJobForm: false,
-      showEditJobForm: false,
-      jobForm: {
+      showAddForm: false,
+      addForm: {
         name: '',
         titleLevel: '',
         departmentId: null
@@ -182,7 +179,13 @@ export default {
       try {
         this.listLoading = true
         if (this.filters.name || this.filters.departmentId) {
-          this.jobList = await getJobList(this.filters)
+          const query = {}
+          Object.keys(this.filters).forEach(key => {
+            if (this.filters[key]) {
+              query[key] = this.filters[key]
+            }
+          })
+          this.jobList = await getJobList(query)
         } else {
           this.jobList = await getJobList()
         }
@@ -218,27 +221,17 @@ export default {
     resetForm(formName) {
       this.$refs[formName].resetFields()
     },
-    showForm(formType) {
-      if (formType === 'addJob') {
-        this.showAddJobForm = true
-        this.showEditJobForm = false
-      }
-      if (formType === 'editJob') {
-        this.showEditJobForm = true
-        this.showAddJobForm = false
-      }
-    },
-    submitAddJobForm(formName) {
+    submitAddForm(formName) {
       this.$refs[formName].validate(async(valid) => {
         if (valid) {
           try {
-            await addJob(this.jobForm)
+            await addJob(this.addForm)
             Message({
               message: '添加成功',
               type: 'success',
               duration: '2000'
             })
-            this.showjobForm = false
+            this.showAddForm = false
             this.resetForm(formName)
             await this.fetchData()
           } catch (error) {
@@ -247,6 +240,27 @@ export default {
         } else {
           return
         }
+      })
+    },
+    deletJob({ id }) {
+      MessageBox.confirm('确定要删除吗？', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async() => {
+        try {
+          await deleteJob({ id })
+          Message({
+            message: '删除成功',
+            type: 'success',
+            duration: '2000'
+          })
+          await this.fetchData()
+        } catch (error) {
+          console.log(error)
+        }
+      }).catch(error => {
+        return error
       })
     }
   }

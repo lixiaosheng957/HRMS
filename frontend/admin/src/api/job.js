@@ -15,3 +15,11 @@ export function addJob(data) {
     data: data
   })
 }
+
+export function deleteJob(data) {
+  return request({
+    url: '/job-level/delete',
+    method: 'post',
+    data: data
+  })
+}

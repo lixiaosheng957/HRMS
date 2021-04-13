@@ -6,7 +6,7 @@ from marshmallow import Schema, fields, validate, ValidationError
 class JobLevel(Base):
     __tablename__ = 'job_level'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(32), unique=True)
+    name = Column(String(32))
     titleLevel = Column(Enum('高级', '中级', '初级', '管理层'))
     enabled = Column(Boolean)
     departmentId = Column(Integer, ForeignKey('department.id'))
