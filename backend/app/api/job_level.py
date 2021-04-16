@@ -93,9 +93,18 @@ def get_job_level_list():
                 and_(JobLevel.name.like(f'%{name}%'), JobLevel.departmentId == department_id),
                 JobLevel.status == 1).all()
     elif department_id or name:
-        job_level_list = JobLevel.query.filter(
-            or_(and_(JobLevel.name.like(f'%{name}%'), JobLevel.status == 1),
-                and_(JobLevel.departmentId == department_id, JobLevel.status == 1))).all()
+        if request.args.get('tags') and name:
+            job_level_list = JobLevel.query.filter(
+                and_(JobLevel.name.like(f'%{name}%'), JobLevel.status == 1)).all()
+            job_level_select = []
+            for item in job_level_list:
+                json = {'value': item.id, 'label': item.name}
+                job_level_select.append(json)
+            return jsonify(job_level_select)
+        else:
+            job_level_list = JobLevel.query.filter(
+                or_(and_(JobLevel.name.like(f'%{name}%'), JobLevel.status == 1),
+                    and_(JobLevel.departmentId == department_id, JobLevel.status == 1))).all()
     else:
         job_level_list = JobLevel.query.filter_by().all()
     result = job_levels_schema.dump(job_level_list)

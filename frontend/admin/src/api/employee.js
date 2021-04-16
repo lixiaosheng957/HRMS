@@ -31,3 +31,11 @@ export function editEmployee(data) {
     data: data
   })
 }
+
+export function transfer(data) {
+  return request({
+    url: '/employee/transfer',
+    method: 'post',
+    data: data
+  })
+}

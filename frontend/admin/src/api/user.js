@@ -23,11 +23,11 @@ export function logout() {
   })
 }
 
-export function getUserList(currentPage, pageSize) {
+export function getUserList(params) {
   return request({
     url: 'user/list',
     method: 'get',
-    params: { currentPage, pageSize }
+    params: { ...params }
   })
 }
 

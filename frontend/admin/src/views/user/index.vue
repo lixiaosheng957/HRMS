@@ -3,19 +3,40 @@
     <el-container>
       <el-header>
         <el-row>
-          <el-col :span="5" style="margin-right:10px;">
-            <el-input v-model="search" placeholder="根据用户名搜索" />
+          <el-col :span="4" style="margin-right:10px;">
+            <el-input v-model="searchByAccount" placeholder="根据用户名搜索" />
           </el-col>
           <el-col :span="2">
-            <el-button type="primary" icon="el-icon-search">搜索</el-button>
+            <el-button type="primary" icon="el-icon-search" @click="fetchData({account:searchByAccount})">搜索</el-button>
           </el-col>
-          <el-col :span="3" :offset="12">
+          <el-col :span="4" style="margin-right:10px;">
+            <el-select
+              v-model="searchByHolder"
+              placeholder="请输入关键词"
+              filterable
+              clearable
+              remote
+              :remote-method="getEmployeeTagsList"
+              :loading="selectLoading"
+            >
+              <el-option
+                v-for="item in employeeList"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-col>
+          <el-col :span="2">
+            <el-button type="primary" icon="el-icon-search" @click="fetchData({holderId:searchByHolder})">搜索</el-button>
+          </el-col>
+          <el-col :span="3" :offset="8">
             <el-button type="primary" icon="el-icon-plus" @click="showAddForm = true">添加用户</el-button>
           </el-col>
         </el-row>
       </el-header>
       <el-main>
-        <el-table v-loading="listLoading" :data="userList" border fit element-loading-text="加载中">
+        <el-table v-loading="listLoading" :data="userList" border fit height="550px" element-loading-text="加载中">
           <el-table-column prop="id" label="用户编号" align="center" width="80" />
           <el-table-column prop="username" label="用户名" align="center" width="200" />
           <el-table-column prop="holder" label="持有人" align="center" width="120" />
@@ -50,15 +71,29 @@
           <el-form-item label="确认密码" label-width="90px" prop="confirmPassword">
             <el-input v-model="addUserForm.confirmPassword" type="password" placeholder="再次输入密码" />
           </el-form-item>
-          <el-form-item label="持有人" label-width="90px" prop="holder">
-            <el-input v-model="addUserForm.holder" type="text" placeholder="请输入持有人" />
-          </el-form-item>
-          <el-form-item label="持有人电话" label-width="90px" prop="phone">
-            <el-input v-model="addUserForm.phone" type="text" placeholder="请输入持有人电话" />
+          <el-form-item label="持有人" label-width="90px" prop="holderId">
+            <el-select
+              v-model="addUserForm.holderId"
+              placeholder="请输入关键词"
+              filterable
+              clearable
+              remote
+              :remote-method="getEmployeeTagsList"
+              :loading="selectLoading"
+            >
+              <el-option
+                v-for="item in employeeList"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
           </el-form-item>
           <el-form-item label="权限" label-width="90px" prop="roles">
             <el-checkbox-group v-model="addUserForm.roles">
               <el-checkbox label="admin" />
+              <el-checkbox label="hr" />
+              <el-checkbox label="employee" />
             </el-checkbox-group>
           </el-form-item>
           <el-form-item>
@@ -79,7 +114,7 @@
 
 <script>
 import { getUserList, addUser } from '@/api/user'
-import { validPhone } from '@/utils/validate'
+import { getEmployeeList } from '@/api/employee'
 import { Message } from 'element-ui'
 export default {
   name: 'User',
@@ -116,27 +151,18 @@ export default {
         callback()
       }
     }
-    const checkPhone = (rule, value, callback) => {
-      if (!value) {
-        callback(new Error('请输入持有人电话'))
-      } else if (!validPhone(value)) {
-        console.log(validPhone(value))
-        callback(new Error('电话号码格式错误'))
-      } else {
-        callback()
-      }
-    }
     return {
-      search: '',
       userList: null,
+      selectLoading: false,
       listLoading: false,
       showAddForm: false,
+      searchByAccount: '',
+      searchByHolder: null,
       addUserForm: {
         username: '',
         password: '',
         confirmPassword: '',
-        holder: '',
-        phone: '',
+        holderId: null,
         roles: []
       },
       rules: {
@@ -155,14 +181,9 @@ export default {
             validator: checkConfirmPassword, trigger: 'blur'
           }
         ],
-        holder: [
+        holderId: [
           {
             required: true, message: '请输入持有人', trigger: 'blur'
-          }
-        ],
-        phone: [
-          {
-            validator: checkPhone, trigger: 'blur'
           }
         ],
         roles: [
@@ -170,20 +191,26 @@ export default {
             type: 'array', required: true, message: '请选择至少一项权限', trigger: 'change'
           }
         ]
-      }
+      },
+      employeeList: []
     }
   },
   created() {
     this.fetchData(1, 10)
   },
   methods: {
-    async fetchData(currentPage, pageSize) {
+    async fetchData(query) {
       try {
         this.listLoading = true
-        this.userList = await getUserList(currentPage, pageSize)
+        if (query) {
+          this.userList = await getUserList(query)
+        } else {
+          this.userList = await getUserList()
+        }
         this.listLoading = false
         console.log(this.userList)
       } catch (error) {
+        this.listLoading = false
         console.log(error)
       }
     },
@@ -207,6 +234,7 @@ export default {
             })
             this.showAddForm = false
             this.resetForm(formName)
+            this.fetchData()
           } catch (error) {
             console.log(error)
           }
@@ -217,6 +245,18 @@ export default {
     },
     resetForm(formName) {
       this.$refs[formName].resetFields()
+    },
+    async getEmployeeTagsList(query) {
+      if (query) {
+        try {
+          this.selectLoading = true
+          this.employeeList = await getEmployeeList({ tags: true, name: query })
+          this.selectLoading = false
+        } catch (error) {
+          this.selectLoading = false
+          console.log(error)
+        }
+      }
     }
   }
 }

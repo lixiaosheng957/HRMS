@@ -1,7 +1,6 @@
-from app.models.base import Base
-from sqlalchemy import Column, Table, Integer, ForeignKey, String, Date, Enum, Float
-from marshmallow import Schema, fields, validate, ValidationError
-from app.models.department import Department
+from app.models.base import Base, db
+from sqlalchemy import Column, Integer, ForeignKey, String, Date, Enum, Float
+from marshmallow import Schema, fields, validate
 
 
 class Employee(Base):
@@ -27,8 +26,11 @@ class Employee(Base):
     jobLevelId = Column(Integer, ForeignKey('job_level.id'))
     address = Column(String(64))
     noWorkDate = Column(Date())
-    beginDate = Column(Date())
-    endDate = Column(Date())
+    contractBeginDate = Column(Date())
+    contractEndDate = Column(Date())
+    lastCompany = Column(String(32))
+    account = db.relationship('User', uselist=False, backref="holder_info")
+    transfer_record = db.relationship('EmployeeTransfer', backref='employee_info', lazy=True)
 
 
 class EmployeeSchema(Schema):
@@ -53,8 +55,9 @@ class EmployeeSchema(Schema):
     jobLevelId = fields.Int()
     address = fields.Str()
     noWorkDate = fields.Date()
-    beginDate = fields.Date()
-    endDate = fields.Date()
+    contractBeginDate = fields.Date()
+    contractEndDate = fields.Date()
+    lastCompany = fields.Str()
 
 
 employee_schema = EmployeeSchema()

@@ -7,6 +7,8 @@ Vue.use(Router)
 import Layout from '@/layout'
 import userRouter from '@/router/module/user'
 import employeeRouter from '@/router/module/employee'
+import attendanceRouter from '@/router/module/attendance'
+import traningRouter from '@/router/module/traning'
 /**
  * Note: sub-menu only appear when route children.length >= 1
  * Detail see: https://panjiachen.github.io/vue-element-admin-site/guide/essentials/router-and-nav.html
@@ -60,88 +62,8 @@ export const constantRoutes = [
 export const asyncRoutes = [
   userRouter,
   employeeRouter,
-  {
-    path: '/attendance',
-    component: Layout,
-    meta: {
-      icon: 'user',
-      title: '假勤',
-      roles: ['admin']
-    },
-    children: [
-      {
-        path: 'record',
-        name: 'AttendanceRecord',
-        component: () => import('@/views/attendance/record'),
-        meta: {
-          icon: 'user',
-          title: '考勤记录',
-          roles: ['admin']
-        }
-      },
-      {
-        path: 'total',
-        name: 'AttendanceTotal',
-        component: () => import('@/views/attendance/total'),
-        meta: {
-          icon: 'user',
-          title: '考勤汇总',
-          roles: ['admin']
-        }
-      },
-      {
-        path: 'overtime-applicate',
-        name: 'AttendanceTotal',
-        component: () => import('@/views/attendance/total'),
-        meta: {
-          icon: 'user',
-          title: '加班申请',
-          roles: ['admin']
-        }
-      },
-      {
-        path: 'ask-for-leave',
-        name: 'AttendanceTotal',
-        component: () => import('@/views/attendance/total'),
-        meta: {
-          icon: 'user',
-          title: '请假申请',
-          roles: ['admin']
-        }
-      }
-    ]
-  },
-  {
-    path: '/training',
-    component: Layout,
-    meta: {
-      icon: 'user',
-      title: '培训',
-      roles: ['admin']
-    },
-    children: [
-      {
-        path: 'project',
-        name: 'TrainingProject',
-        component: () => import('@/views/training/project'),
-        meta: {
-          icon: 'user',
-          title: '培训计划',
-          roles: ['admin']
-        }
-      },
-      {
-        path: 'trainers',
-        name: 'Trainers',
-        component: () => import('@/views/training/trainers'),
-        meta: {
-          icon: 'user',
-          title: '培训人员',
-          roles: ['admin']
-        }
-      }
-    ]
-  },
+  attendanceRouter,
+  traningRouter,
   {
     path: '/recruitment',
     component: Layout,
@@ -173,8 +95,8 @@ export const asyncRoutes = [
       },
       {
         path: 'to-be-hired',
-        component: () => import('@/views/recruitment/recruitment'),
-        name: 'SocialRecruitment',
+        component: () => import('@/views/recruitment/readyToJob'),
+        name: 'ReadToJob',
         meta: {
           icon: 'user',
           title: '待入职',
@@ -186,6 +108,7 @@ export const asyncRoutes = [
   {
     path: '/organization',
     component: Layout,
+    redirect: '/organization/department',
     meta: {
       icon: 'user',
       title: '组织',

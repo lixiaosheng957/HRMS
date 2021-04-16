@@ -30,7 +30,7 @@ service.interceptors.response.use(
   error => {
     console.log(error.response)
     const err = error.response.data
-    if (err.error_code === 1005 || err.error_code === 1002 || error_code === 1003) {
+    if (err.error_code === 1005 || err.error_code === 1002 || err.error_code === 1003) {
       MessageBox.confirm('你已经处于离线状态，是否重新登录？', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',

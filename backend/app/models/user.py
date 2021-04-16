@@ -19,6 +19,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(32), unique=True, index=True)
     holder = Column(String(32))
+    holderId = Column(Integer, ForeignKey('employee.id'))
     phone = Column(String(11))
     password_hash = Column(String(60))
     roles = db.relationship(
@@ -59,6 +60,7 @@ class UserSchema(Schema):
     username = fields.Str(required=True, validate=validate.Length(min=6, max=12))
     password = fields.Str(required=True, validate=validate.Length(min=6), load_only=True)
     holder = fields.Str()
+    holderId = fields.Int()
     phone = fields.Str()
     lastLoginTime = fields.TimeDelta()
     lastLoginIp = fields.Str()

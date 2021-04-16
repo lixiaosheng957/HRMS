@@ -7,6 +7,7 @@ from app.models.base import db
 from app.libs.token_auth import login_required
 from app.libs.status_code import Success, ParameterException
 from marshmallow import ValidationError
+from sqlalchemy import and_
 
 api = Redprint('user')
 
@@ -53,10 +54,22 @@ def get_userinfo():
 @api.route('/list')
 @login_required(['admin'])
 def get_user_list():
-    current_page = int(request.args.get('currentPage'))
-    page_size = int(request.args.get('pageSize'))
-    user_list = User.query.paginate(current_page, page_size).items
+    account = request.args.get('account')
+    holder_id = request.args.get('holderId')
+    if account:
+        user_list = User.query.filter(and_(User.username.like(f'%{account}%'), User.status == 1))
+    elif holder_id:
+        user_list = User.query.filter_by(holderId=holder_id).all()
+    else:
+        user_list = User.query.filter_by().all()
     result = users_schema.dump(user_list)
+    for index, item in enumerate(result):
+        if user_list[index].holder_info:
+            item['holder'] = user_list[index].holder_info.name
+            item['phone'] = user_list[index].holder_info.phone
+        else:
+            if 'admin' in g.user.role:
+                item['holder'] = '超级管理员'
     return jsonify(result)
 
 
@@ -82,8 +95,8 @@ def add_user():
         user = User()
         user.username = data['username']
         user.password = data['password']
-        user.holder = data['holder']
-        user.phone = data['phone']
+        if data['holderId']:
+            user.holderId = data['holderId']
         user.roles = roles_list
     return Success()
 

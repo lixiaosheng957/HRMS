@@ -142,6 +142,10 @@ export default {
       },
       titleLevelList: [
         {
+          value: '实习',
+          label: '实习'
+        },
+        {
           value: '初级',
           label: '初级'
         },

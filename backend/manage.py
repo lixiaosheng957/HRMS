@@ -11,7 +11,7 @@ app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 manager = Manager(app)
 migrate = Migrate(app, db)
 
-# manager.add_command("runserver", Server(host="0.0.0.0", port=5000))
+manager.add_command("runserver", Server(host="127.0.0.1", port=5000))
 manager.add_command("db", MigrateCommand)  # 数据库管理
 manager.add_command("clean", Clean())  # 清理缓存文件
 manager.add_command("url", ShowUrls())  # 打印所有URL
@@ -101,17 +101,12 @@ def create_supper_user():
 
 
 @manager.command
-def create_department():
-    from app.models.department import Department
+def create_role_leader():
+    from app.models.role import Role
     with db.auto_commit():
-        dep = Department()
-        dep.name = "硬件研发部"
-        dep.leader = "sheng123"
-        dep.isParent = False
-        dep.enabled = True
-        dep_parent = Department.query.filter_by(id=1).first()
-        dep.parent = dep_parent
-        db.session.add(dep)
+        leader_role = Role()
+        leader_role.name = 'hr'
+        db.session.add(leader_role)
 
 
 @manager.command

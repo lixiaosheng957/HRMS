@@ -3,6 +3,7 @@ import Layout from '@/layout'
 const employeeRouter = {
   path: '/personnel-information',
   component: Layout,
+  redirect: '/personnel-information/employee',
   meta: {
     icon: 'user',
     title: '人员信息',
@@ -15,27 +16,7 @@ const employeeRouter = {
       name: 'Employee',
       meta: {
         icon: 'user',
-        title: '正式员工',
-        roles: ['admin']
-      }
-    },
-    {
-      path: 'tryout',
-      component: () => import('@/views/personnelInformation/tryout'),
-      name: 'TryoutEmployee',
-      meta: {
-        icon: 'user',
-        title: '试用员工',
-        roles: ['admin']
-      }
-    },
-    {
-      path: 'practice',
-      component: () => import('@/views/personnelInformation/practice'),
-      name: 'PracticeEmployee',
-      meta: {
-        icon: 'user',
-        title: '实习员工',
+        title: '员工管理',
         roles: ['admin']
       }
     },
@@ -55,7 +36,7 @@ const employeeRouter = {
       name: 'ChangeEmployee',
       meta: {
         icon: 'user',
-        title: '员工变动',
+        title: '变动记录',
         roles: ['admin']
       }
     }
