@@ -1,6 +1,8 @@
 from app.models.base import Base, db
 from sqlalchemy import Column, Integer, ForeignKey, String, Date, Enum, Float
 from marshmallow import Schema, fields, validate
+from app.models.user import UserSchema
+from app.models.employee_transfer import EmployeeSchema as EmployeeTransferSchema
 
 
 class Employee(Base):
@@ -24,6 +26,7 @@ class Employee(Base):
     type = Column(Enum('正式员工', '试用员工', '实习员工'))
     departmentId = Column(Integer, ForeignKey('department.id'))
     jobLevelId = Column(Integer, ForeignKey('job_level.id'))
+    workId = Column(String(20))
     address = Column(String(64))
     noWorkDate = Column(Date())
     contractBeginDate = Column(Date())
@@ -53,11 +56,14 @@ class EmployeeSchema(Schema):
     workState = fields.Str(validate=validate.OneOf(['在职', '离职']))
     departmentId = fields.Int()
     jobLevelId = fields.Int()
+    workId = fields.Str()
     address = fields.Str()
     noWorkDate = fields.Date()
     contractBeginDate = fields.Date()
     contractEndDate = fields.Date()
     lastCompany = fields.Str()
+    account = fields.List(fields.Nested(UserSchema))
+    transfer_record = fields.List(fields.Nested(EmployeeTransferSchema))
 
 
 employee_schema = EmployeeSchema()

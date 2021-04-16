@@ -10,16 +10,6 @@ const attendanceRouter = {
   },
   children: [
     {
-      path: 'record',
-      name: 'AttendanceRecord',
-      component: () => import('@/views/attendance/record'),
-      meta: {
-        icon: 'user',
-        title: '考勤记录',
-        roles: ['admin']
-      }
-    },
-    {
       path: 'total',
       name: 'AttendanceTotal',
       component: () => import('@/views/attendance/total'),
@@ -35,7 +25,7 @@ const attendanceRouter = {
       component: () => import('@/views/attendance/overTime'),
       meta: {
         icon: 'user',
-        title: '加班申请',
+        title: '加班审批',
         roles: ['admin']
       }
     },
@@ -45,7 +35,7 @@ const attendanceRouter = {
       component: () => import('@/views/attendance/askForLeave'),
       meta: {
         icon: 'user',
-        title: '请假申请',
+        title: '请假审批',
         roles: ['admin']
       }
     }

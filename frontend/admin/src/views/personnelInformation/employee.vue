@@ -183,14 +183,19 @@
               </el-col>
             </el-row>
             <el-row>
-              <el-col :span="12">
+              <el-col :span="8">
                 <el-form-item label="工作时间" prop="workAge">
                   <el-input-number v-model="addEmployeeForm.workAge" :step="0.5" :min="0" size="small" />
                 </el-form-item>
               </el-col>
-              <el-col :span="12">
+              <el-col :span="8">
                 <el-form-item label="身份证号" prop="idCard">
                   <el-input v-model="addEmployeeForm.idCard" type="text" placeholder="请输入身份证号" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="工号" prop="workId">
+                  <el-input v-model="addEmployeeForm.workId" type="text" placeholder="请输入工号" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -449,6 +454,9 @@
               <el-form-item label="职位">
                 <span>{{ deatil.job }}</span>
               </el-form-item>
+              <el-form-item label="工号">
+                <span>{{ deatil.workId }}</span>
+              </el-form-item>
               <el-form-item label="居住地址">
                 <span>{{ deatil.address }}</span>
               </el-form-item>
@@ -531,6 +539,7 @@ export default {
         idCard: '',
         email: '',
         wedlock: '',
+        workId: '',
         phone: '',
         workAge: null,
         tipTopDegree: '',
@@ -559,6 +568,7 @@ export default {
         tipTopDegree: [{ required: true, message: '学历不能为空', trigger: 'blur' }],
         workAge: [{ required: true, message: '工作时间不能为空', trigger: 'blur' }],
         idCard: [{ validator: checkIdCard, trigger: 'blur', required: true }],
+        workId: [{ required: true, message: '工号不能为空', trigger: 'blur' }],
         type: [{ required: true, message: '员工类型不能为空', trigger: 'blur' }],
         departmentId: [{ required: true, message: '所属部门不能为空', trigger: 'blur' }],
         jobLevelId: [{ required: true, message: '职位不能为空', trigger: 'blur' }],
@@ -596,6 +606,7 @@ export default {
         workState: '在职',
         department: '',
         job: '',
+        workId: '',
         address: '',
         lastCompany: '',
         contractBeginDate: '',

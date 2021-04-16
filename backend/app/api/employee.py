@@ -3,6 +3,7 @@ from app.libs.redprint import Redprint
 from app.models.employee import Employee, employee_schema, employees_schema
 from app.models.employee_transfer import EmployeeTransfer, employee_transfer_schema, employee_transfers_schema
 from app.models.base import db
+from app.models.opLog import OperateLog
 from app.libs.token_auth import login_required
 from app.libs.expection import DatabaseRecordRepeat
 from app.libs.status_code import Success, ParameterException, DeleteSuccess
@@ -21,7 +22,9 @@ def add_employee():
     try:
         data = employee_schema.load(json_data)
         if Employee.query.filter_by(idCard=data['idCard']).first():
-            raise DatabaseRecordRepeat()
+            raise DatabaseRecordRepeat("身份号重复")
+        if Employee.query.filter_by(workId=data['workId']).first():
+            raise DatabaseRecordRepeat(msg="工号重复")
     except ValidationError as err:
         return ParameterException(msg=err.messages)
     except DatabaseRecordRepeat as err:
@@ -31,6 +34,7 @@ def add_employee():
         for key, value in data.items():
             setattr(employee, key, value)
         db.session.add(employee)
+    OperateLog.write_log(g.user.uid, '员工操作', f'添加员工{employee.name}')
     return Success()
 
 
@@ -49,6 +53,7 @@ def modify_employee():
         for key, value in data.items():
             if key in ['wedlock', 'phone', 'email', 'address']:
                 setattr(employee, key, value)
+    OperateLog.write_log(g.user.uid, '员工操作', f'修改员工{employee.name}')
     return Success()
 
 
@@ -130,6 +135,7 @@ def delete_employee():
     employee = Employee.query.filter_by(id=employee_id).first_or_404()
     with db.auto_commit():
         employee.status = 0
+    OperateLog.write_log(g.user.uid, '员工操作', f'删除员工{employee.name}')
     return DeleteSuccess()
 
 
@@ -171,6 +177,7 @@ def employee_transfer():
         transfer_record.beforeContractBeginDate = update_employee.contractBeginDate
         transfer_record.beforeContractEndDate = update_employee.contractEndDate
         db.session.add(transfer_record)
+    OperateLog.write_log(g.user.uid, '员工操作', f'变动员工{update_employee.name}')
     return Success()
 
 
@@ -181,7 +188,13 @@ def employee_move():
 
 
 @api.route('/get-transfer-records')
-@login_required(['admin','hr'])
+@login_required(['admin', 'hr'])
 def get_transfer_records():
     is_for_me = request.args.get('mine')
-    
+    if is_for_me:
+        uid = g.user.uid
+        transfer_records = EmployeeTransfer.query.filter_by(operatorId=uid).all()
+    else:
+        transfer_records = EmployeeTransfer.query.filter_by().all()
+    result = employee_transfers_schema.dump(transfer_records)
+    return jsonify(result)

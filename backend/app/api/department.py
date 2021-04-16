@@ -4,6 +4,7 @@ from app.libs.expection import DatabaseRecordRepeat
 from app.libs.redprint import Redprint
 from app.models.base import db
 from app.models.department import Department, department_schema, departments_schema
+from app.models.opLog import OperateLog
 from app.libs.token_auth import login_required
 from app.libs.status_code import Success, ParameterException, DeleteSuccess
 from marshmallow import ValidationError
@@ -32,6 +33,7 @@ def add_department():
         for key, value in data.items():
             setattr(department, key, value)
         db.session.add(department)
+    OperateLog.write_log(g.user.uid, '部门操作', f'添加{department.name}部门')
     return Success()
 
 
@@ -84,6 +86,7 @@ def delete_department():
         return ParameterException(msg="该部门员工数不为零，不能删除")
     with db.auto_commit():
         department.status = 0
+    OperateLog.write_log(g.user.uid, '部门操作', f'删除{department.name}部门')
     return DeleteSuccess()
 
 
@@ -103,6 +106,7 @@ def modify_department():
         for key, value in data.items():
             if value and key != "id":
                 setattr(department, key, value)
+    OperateLog.write_log(g.user.uid, '部门操作', f'修改{department.name}部门')
     return Success()
 
 

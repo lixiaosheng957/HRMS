@@ -39,3 +39,11 @@ export function transfer(data) {
     data: data
   })
 }
+
+export function getTransferRecordsList(params) {
+  return request({
+    url: '/employee/get-transfer-records',
+    method: 'get',
+    params: { ...params }
+  })
+}

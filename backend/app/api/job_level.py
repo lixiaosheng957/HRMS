@@ -2,6 +2,7 @@ from flask import current_app, jsonify, g, request
 from app.libs.redprint import Redprint
 from app.models.base import db
 from app.models.job_level import JobLevel, job_level_schema, job_levels_schema
+from app.models.opLog import OperateLog
 from app.libs.token_auth import login_required
 from app.libs.status_code import Success, ParameterException, DeleteSuccess
 from marshmallow import ValidationError
@@ -35,6 +36,7 @@ def add_job_level():
             for key, value in data.items():
                 setattr(job_level, key, value)
                 db.session.add(job_level)
+    OperateLog.write_log(g.user.uid, '职位操作', f'添加{job_level.name}职位')
     return Success()
 
 
@@ -52,6 +54,7 @@ def modify_job_level():
     with db.auto_commit():
         for key, value in data.items():
             setattr(job_level, key, value)
+    OperateLog.write_log(g.user.uid, '职位操作', f'修改{job_level.name}职位')
     return Success()
 
 
@@ -68,6 +71,7 @@ def delete_job_level():
 
     with db.auto_commit():
         job_level.status = 0
+    OperateLog.write_log(g.user.uid, '职位操作', f'删除{job_level.name}职位')
     return DeleteSuccess()
 
 

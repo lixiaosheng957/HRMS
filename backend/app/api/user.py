@@ -4,6 +4,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from app.models.user import User, user_schema, users_schema
 from app.models.role import Role
 from app.models.base import db
+from app.models.opLog import OperateLog
 from app.libs.token_auth import login_required
 from app.libs.status_code import Success, ParameterException
 from marshmallow import ValidationError
@@ -34,6 +35,7 @@ def login():
     t = {
         'token': token.decode('ascii')
     }
+    OperateLog.write_log(user.id, '账户操作', '登录')
     return jsonify(t)
 
 
@@ -98,6 +100,7 @@ def add_user():
         if data['holderId']:
             user.holderId = data['holderId']
         user.roles = roles_list
+    OperateLog.write_log(g.user.uid, '账户操作', f'添加账户{user.username}')
     return Success()
 
 
@@ -115,7 +118,7 @@ def modify_user():
     with db.auto_commit():
         for key, value in data.items():
             setattr(user, key, value)
-
+    OperateLog.write_log(g.user.uid, '账户操作', f'修改账户{user.username}')
     return Success()
 
 
