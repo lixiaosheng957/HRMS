@@ -47,3 +47,11 @@ export function getTransferRecordsList(params) {
     params: { ...params }
   })
 }
+
+export function getTransferDetail(params) {
+  return request({
+    url: '/employee/get-transfer-detail',
+    method: 'get',
+    params: { ...params }
+  })
+}

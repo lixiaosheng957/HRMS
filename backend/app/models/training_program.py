@@ -1,6 +1,7 @@
 from app.models.base import Base, db
 from sqlalchemy import Column, Integer, ForeignKey, String, Date, Enum, Boolean
 from marshmallow import Schema, fields, validate
+from app.models.employee_training import EmployeeTrainingRecordSchema
 
 
 class TrainingProgram(Base):
@@ -12,16 +13,18 @@ class TrainingProgram(Base):
     beginDate = Column(Date)
     endDate = Column(Date)
     isEnd = Column(Boolean)
+    trainingPeople = db.relationship('EmployeeTrainingRecord', backref='training_program', lazy=True)
 
 
 class TrainingProgramSchema(Schema):
     id = fields.Int()
-    name = fields.Str()
-    content = fields.Str()
-    address = fields.Str()
-    beginDate = fields.Date()
-    endDate = fields.Date()
+    name = fields.Str(required=True)
+    content = fields.Str(required=True)
+    address = fields.Str(required=True)
+    beginDate = fields.Date(required=True)
+    endDate = fields.Date(required=True)
     isEnd = fields.Boolean()
+    trainingPeople = fields.List(fields.Nested(EmployeeTrainingRecordSchema))
 
 
 training_program_schema = TrainingProgramSchema()

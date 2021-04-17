@@ -12,7 +12,7 @@
           <el-col :span="4" style="margin-right:10px;">
             <el-select
               v-model="searchByHolder"
-              placeholder="请输入关键词"
+              placeholder="根据员工名搜索"
               filterable
               clearable
               remote

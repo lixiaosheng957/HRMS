@@ -30,6 +30,7 @@ class User(Base):
     lastLoginIp = db.Column(db.String(32), nullable=True)  # 上次登录IP
     currentLoginIp = db.Column(db.String(32), nullable=True)  # 当前登录IP
     userRole = roles_users
+    transferRecord = db.relationship('EmployeeTransfer', backref='transfer_operator', lazy=True)
     operateLog = db.relationship('OperateLog', backref='user', lazy=True)
 
     def __repr__(self):

@@ -321,7 +321,7 @@
             </el-row>
           </el-form>
         </el-dialog>
-        <el-dialog title="员工调动" :visible.sync="showChangeForm" width="40%" top="10vh">
+        <el-dialog title="员工调动" :visible.sync="showChangeForm" width="40%" top="10vh" @close="resetForm('transferForm')">
           <el-form ref="transferForm" :model="transferForm" :rules="transferFormRules" label-width="150px">
             <el-row>
               <el-col :span="12">

@@ -34,6 +34,7 @@ class Employee(Base):
     lastCompany = Column(String(32))
     account = db.relationship('User', uselist=False, backref="holder_info")
     transfer_record = db.relationship('EmployeeTransfer', backref='employee_info', lazy=True)
+    training_record = db.relationship('EmployeeTrainingRecord', backref='employee_info', lazy=True)
 
 
 class EmployeeSchema(Schema):
