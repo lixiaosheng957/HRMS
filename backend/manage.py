@@ -105,7 +105,7 @@ def create_role_leader():
     from app.models.role import Role
     with db.auto_commit():
         leader_role = Role()
-        leader_role.name = 'hr'
+        leader_role.name = 'employee'
         db.session.add(leader_role)
 
 

@@ -3,22 +3,13 @@ import Layout from '@/layout'
 const attendanceRouter = {
   path: '/attendance',
   component: Layout,
+  redirect: '/attendance/overtime-applicate',
   meta: {
     icon: 'user',
     title: '假勤',
     roles: ['admin']
   },
   children: [
-    {
-      path: 'total',
-      name: 'AttendanceTotal',
-      component: () => import('@/views/attendance/total'),
-      meta: {
-        icon: 'user',
-        title: '考勤汇总',
-        roles: ['admin']
-      }
-    },
     {
       path: 'overtime-applicate',
       name: 'OverTimeApplicate',

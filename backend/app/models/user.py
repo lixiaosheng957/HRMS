@@ -54,7 +54,7 @@ class User(Base):
         if not user.verify_password(password):
             raise AuthFailed(msg="登录验证失败!", error_code=1006)
         role = user.roles
-        return {'uid': user.id, 'roles': role}
+        return {'uid': user.id, 'roles': role, 'holderId': user.holderId}
 
 
 class UserSchema(Schema):

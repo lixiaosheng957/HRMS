@@ -4,7 +4,7 @@ from app.libs.status_code import AuthFailed, Forbidden
 from functools import wraps
 from collections import namedtuple
 
-User = namedtuple('User', ['uid', 'username', 'role'])
+User = namedtuple('User', ['uid', 'username', 'role', 'holderId'])
 
 
 def login_required(allow_roles: list = None):
@@ -37,8 +37,9 @@ def verify_auth_token(token, allow_roles):
     uid = data['uid']
     username = data['username']
     roles = data['roles']
+    holder_id = data['holder_id']
     if allow_roles:
         allow = set(allow_roles) & set(roles)
         if not allow:
             raise Forbidden()
-    return User(uid, username, roles)
+    return User(uid, username, roles, holder_id)

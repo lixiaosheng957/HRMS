@@ -15,7 +15,6 @@ api = Redprint('user')
 
 @api.route('/login', methods=['POST'])
 def login():
-    # form = ClientForm().validate_for_api()
     json_data = request.get_json()
     if not json_data:
         return ParameterException()
@@ -28,6 +27,7 @@ def login():
     token = generate_auth_token(identity['uid'],
                                 data['username'],
                                 identity['roles'],
+                                identity['holderId'],
                                 expiration)
     user = User.query.filter_by(username=data['username']).first()
     with db.auto_commit():
@@ -122,10 +122,11 @@ def modify_user():
     return Success()
 
 
-def generate_auth_token(uid, username, roles, expiration=7200):
+def generate_auth_token(uid, username, roles, holder_id, expiration=7200):
     s = Serializer(current_app.config['SECRET_KEY'], expiration)
     return s.dumps({
         'uid': uid,
         'username': username,
-        'roles': [role.name for role in roles]
+        'roles': [role.name for role in roles],
+        'holder_id': holder_id
     })

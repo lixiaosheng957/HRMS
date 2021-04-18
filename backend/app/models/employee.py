@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, ForeignKey, String, Date, Enum, Float
 from marshmallow import Schema, fields, validate
 from app.models.user import UserSchema
 from app.models.employee_transfer import EmployeeSchema as EmployeeTransferSchema
+from app.models.employee_training import EmployeeTrainingRecordSchema
 
 
 class Employee(Base):
@@ -63,8 +64,9 @@ class EmployeeSchema(Schema):
     contractBeginDate = fields.Date()
     contractEndDate = fields.Date()
     lastCompany = fields.Str()
-    account = fields.List(fields.Nested(UserSchema))
+    account = fields.Nested(UserSchema)
     transfer_record = fields.List(fields.Nested(EmployeeTransferSchema))
+    training_record = fields.List(fields.Nested(EmployeeTrainingRecordSchema))
 
 
 employee_schema = EmployeeSchema()

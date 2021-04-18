@@ -9,6 +9,7 @@ import userRouter from '@/router/module/user'
 import employeeRouter from '@/router/module/employee'
 import attendanceRouter from '@/router/module/attendance'
 import traningRouter from '@/router/module/traning'
+import appliactionRouter from '@/router/module/applicate'
 /**
  * Note: sub-menu only appear when route children.length >= 1
  * Detail see: https://panjiachen.github.io/vue-element-admin-site/guide/essentials/router-and-nav.html
@@ -65,47 +66,6 @@ export const asyncRoutes = [
   attendanceRouter,
   traningRouter,
   {
-    path: '/recruitment',
-    component: Layout,
-    meta: {
-      icon: 'user',
-      title: '招聘',
-      roles: ['admin']
-    },
-    children: [
-      {
-        path: '/campus',
-        component: () => import('@/views/recruitment/campusRecruitment'),
-        name: 'CampsRecruitment',
-        meta: {
-          icon: 'user',
-          title: '校园招聘',
-          roles: ['admin']
-        }
-      },
-      {
-        path: 'social',
-        component: () => import('@/views/recruitment/recruitment'),
-        name: 'SocialRecruitment',
-        meta: {
-          icon: 'user',
-          title: '社会招聘',
-          roles: ['admin']
-        }
-      },
-      {
-        path: 'to-be-hired',
-        component: () => import('@/views/recruitment/readyToJob'),
-        name: 'ReadToJob',
-        meta: {
-          icon: 'user',
-          title: '待入职',
-          roles: ['admin']
-        }
-      }
-    ]
-  },
-  {
     path: '/organization',
     component: Layout,
     redirect: '/organization/department',
@@ -137,6 +97,7 @@ export const asyncRoutes = [
       }
     ]
   },
+  appliactionRouter,
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]

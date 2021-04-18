@@ -1,6 +1,7 @@
 from flask import current_app, jsonify, g, request
 from app.libs.redprint import Redprint
 from app.models.base import db
+from app.models.opLog import OperateLog
 from app.models.training_program import TrainingProgram, training_program_schema, training_programs_schema
 from app.libs.token_auth import login_required
 from app.libs.expection import DatabaseRecordRepeat
@@ -28,6 +29,8 @@ def add_training_program():
         training_program = TrainingProgram()
         for key, value in data.items():
             setattr(training_program, key, value)
+        db.session.add(training_program)
+    OperateLog.write_log(g.user.uid, "培训相关操作", "添加培训项目")
     return Success()
 
 
@@ -40,6 +43,7 @@ def delete_training_program():
     program = TrainingProgram.query.filter_by(id=program_id).first_or_404()
     with db.auto_commit():
         program.status = 0
+    OperateLog.write_log(g.user.uid, "培训相关操作", "删除培训项目")
     return DeleteSuccess()
 
 
