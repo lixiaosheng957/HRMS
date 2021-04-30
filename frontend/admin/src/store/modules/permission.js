@@ -19,6 +19,7 @@ export function filterAsyncRoutes(routes, roles) {
       result.push(tmp)
     }
   })
+  return result
 }
 
 const state = {

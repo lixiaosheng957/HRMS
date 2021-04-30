@@ -37,46 +37,19 @@ def db_create_first():
 
 def create_role(name='admin'):
     from app.models.role import Role
-    menus = create_menus()
     admin = Role.query.filter_by(name=name).first()
     if not admin:
         with db.auto_commit():
             admin = Role()
             admin.name = name
-            admin.menus = menus
             db.session.add(admin)
             print("The '%s' role is created!" % name)
     return admin
 
 
-def create_menus():
-    from app.models.menu import Menu
-    menus_config = [{'name': 'index',
-                     'path': '/',
-                     'redirect': 'dashboard',
-                     'component': 'layout',
-                     'title': '仪表盘',
-                     'icon_cls': None,
-                     'keep_alive': False,
-                     'require_auth': False,
-                     'parent_id': None
-                     }
-                    ]
-    menus = []
-    for item in menus_config:
-        with db.auto_commit():
-            menu = Menu()
-            for key, value in item.items():
-                menu.__dict__[key] = value
-            db.session.add(menu)
-            menus.append(menu)
-    return menus
-
-
 @manager.command
 def create_supper_user():
     admin = create_role()
-
     username = input('Please Enter the superuser username:')
     if not username:
         print("username is empty!")
@@ -98,14 +71,14 @@ def create_supper_user():
         user.roles = [admin]
         db.session.add(user)
         print("Superuser is created successfully!")
+    create_role_hr()
 
 
-@manager.command
-def create_role_leader():
+def create_role_hr():
     from app.models.role import Role
     with db.auto_commit():
         leader_role = Role()
-        leader_role.name = 'employee'
+        leader_role.name = 'hr'
         db.session.add(leader_role)
 
 

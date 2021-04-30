@@ -7,7 +7,7 @@ const attendanceRouter = {
   meta: {
     icon: 'user',
     title: '假勤',
-    roles: ['admin']
+    roles: ['admin', 'hr']
   },
   children: [
     {
@@ -17,7 +17,7 @@ const attendanceRouter = {
       meta: {
         icon: 'user',
         title: '加班审批',
-        roles: ['admin']
+        roles: ['admin', 'hr']
       }
     },
     {
@@ -27,7 +27,7 @@ const attendanceRouter = {
       meta: {
         icon: 'user',
         title: '请假审批',
-        roles: ['admin']
+        roles: ['admin', 'hr']
       }
     }
   ]

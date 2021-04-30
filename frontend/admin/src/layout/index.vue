@@ -7,13 +7,12 @@
         <navbar />
       </div>
       <app-main />
-      <app-tips />
     </div>
   </div>
 </template>
 
 <script>
-import { Navbar, Sidebar, AppMain, AppTips } from './components'
+import { Navbar, Sidebar, AppMain } from './components'
 import ResizeMixin from './mixin/ResizeHandler'
 
 export default {
@@ -21,8 +20,7 @@ export default {
   components: {
     Navbar,
     Sidebar,
-    AppMain,
-    AppTips
+    AppMain
   },
   mixins: [ResizeMixin],
   computed: {

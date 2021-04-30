@@ -55,3 +55,43 @@ export function getTransferDetail(params) {
     params: { ...params }
   })
 }
+
+export function employeeMove(data) {
+  return request({
+    url: '/employee/move',
+    method: 'post',
+    data: data
+  })
+}
+
+export function getEmployeeMoveList(params) {
+  return request({
+    url: '/employee/get-employee-move-list',
+    method: 'get',
+    params: { ...params }
+  })
+}
+
+export function getEmployeeMoveDetail(params) {
+  return request({
+    url: '/employee/get-employee-move-detail',
+    method: 'get',
+    params: { ...params }
+  })
+}
+
+export function employeeRenew(data) {
+  return request({
+    url: '/employee/renew',
+    method: 'post',
+    data: data
+  })
+}
+
+export function deleteEmployee(data) {
+  return request({
+    url: '/employee/delete',
+    method: 'post',
+    data: data
+  })
+}

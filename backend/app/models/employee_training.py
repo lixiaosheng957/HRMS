@@ -1,5 +1,5 @@
 from app.models.base import Base, db
-from sqlalchemy import Column, Integer, ForeignKey, String, Date, Enum, Boolean
+from sqlalchemy import Column, Integer, ForeignKey, String, Date, Enum, Boolean, DateTime
 from marshmallow import Schema, fields, validate
 
 
@@ -11,6 +11,8 @@ class EmployeeTrainingRecord(Base):
     assess = Column(String(255))
     level = Column(Enum('优秀', '良好', '中等', '较差'))
     isFinish = Column(Boolean)
+    isFinishAssess = Column(Boolean)
+    finishAssessTime = Column(DateTime)
 
 
 class EmployeeTrainingRecordSchema(Schema):
@@ -20,6 +22,8 @@ class EmployeeTrainingRecordSchema(Schema):
     assess = fields.Str()
     level = fields.Str(validate=validate.OneOf(['优秀', '良好', '中等', '较差']))
     isFinish = fields.Boolean()
+    isFinishAssess = fields.Boolean()
+    finishAssessTime = fields.DateTime(format='%Y-%m-%d %H:%M:%S')
 
 
 employee_training_record_schema = EmployeeTrainingRecordSchema()

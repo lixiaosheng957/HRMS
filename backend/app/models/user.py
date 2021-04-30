@@ -21,7 +21,7 @@ class User(Base):
     holder = Column(String(32))
     holderId = Column(Integer, ForeignKey('employee.id'))
     phone = Column(String(11))
-    password_hash = Column(String(60))
+    password_hash = Column(String(128))
     roles = db.relationship(
         'Role',
         secondary=roles_users,

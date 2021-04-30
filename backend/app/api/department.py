@@ -38,7 +38,7 @@ def add_department():
 
 
 @api.route('/get-department-list')
-@login_required(["admin"])
+@login_required(["admin", 'hr'])
 def get_department_list():
     for_select_tag = request.args.get('selectTag')
     if for_select_tag:
@@ -54,7 +54,6 @@ def get_department_list():
     else:
         department_list = Department.query.filter_by().all()
         result = departments_schema.dump(department_list)
-        # print(result)
         return_json = []
         for index, item in enumerate(result):
             if not item['parentId']:
@@ -65,7 +64,7 @@ def get_department_list():
 
 
 @api.route('/get')
-@login_required(["admin"])
+@login_required(["admin", 'hr'])
 def get_department():
     department_id = request.args.get('id')
     if not department_id:
@@ -91,7 +90,7 @@ def delete_department():
 
 
 @api.route('/modify', methods=['POST'])
-@login_required(["admin"])
+@login_required(["admin", 'hr'])
 def modify_department():
     json_data = request.get_json()
     print(json_data)

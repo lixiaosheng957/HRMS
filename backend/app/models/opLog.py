@@ -1,7 +1,5 @@
 from app.models.base import Base, db
 from sqlalchemy import Column, Integer, ForeignKey, String, Date, Enum
-from marshmallow import Schema, fields, validate
-from flask import g
 
 
 class OperateLog(Base):

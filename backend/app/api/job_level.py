@@ -12,7 +12,7 @@ api = Redprint('job-level')
 
 
 @api.route('/add', methods=['POST'])
-@login_required(['admin'])
+@login_required(['admin', 'hr'])
 def add_job_level():
     json_data = request.get_json()
     if not json_data:
@@ -41,7 +41,7 @@ def add_job_level():
 
 
 @api.route('/modify')
-@login_required(['admin'])
+@login_required(['admin', 'hr'])
 def modify_job_level():
     json_data = request.get_json()
     if not json_data:
@@ -59,7 +59,7 @@ def modify_job_level():
 
 
 @api.route('/delete', methods=['POST'])
-@login_required(['admin'])
+@login_required(['admin', 'hr'])
 def delete_job_level():
     job_level_id = request.get_json()['id']
     if not job_level_id:
@@ -76,7 +76,7 @@ def delete_job_level():
 
 
 @api.route('/get-job-level-list')
-@login_required(['admin'])
+@login_required(['admin', 'hr'])
 def get_job_level_list():
     name = request.args.get('name')
     department_id = None

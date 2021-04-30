@@ -50,7 +50,7 @@
             <el-button @click="resetFilters">重置</el-button>
           </el-col>
         </el-row>
-        <el-table v-loading="listLoading" :data="jobList" border height="500" fit element-loading-text="加载中">
+        <el-table v-loading="listLoading" :data="jobList" border height="550" fit element-loading-text="加载中">
           <el-table-column prop="id" label="职位编号" align="center" width="80" />
           <el-table-column prop="name" label="职位名称" align="center" width="250" />
           <el-table-column prop="titleLevel" label="职位等级" align="center" width="250" />

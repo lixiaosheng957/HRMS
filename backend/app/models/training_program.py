@@ -12,7 +12,9 @@ class TrainingProgram(Base):
     address = Column(String(64))
     beginDate = Column(Date)
     endDate = Column(Date)
+    isPublish = Column(Boolean)
     isEnd = Column(Boolean)
+    isFinishAssess = Column(Boolean)
     trainingPeople = db.relationship('EmployeeTrainingRecord', backref='training_program', lazy=True)
 
 
@@ -23,7 +25,9 @@ class TrainingProgramSchema(Schema):
     address = fields.Str(required=True)
     beginDate = fields.Date(required=True)
     endDate = fields.Date(required=True)
+    isPublish = fields.Boolean()
     isEnd = fields.Boolean()
+    isFinishAssess = fields.Boolean()
     trainingPeople = fields.List(fields.Nested(EmployeeTrainingRecordSchema))
 
 

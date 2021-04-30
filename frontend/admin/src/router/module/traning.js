@@ -4,9 +4,9 @@ const traningRouter = {
   path: '/training',
   component: Layout,
   meta: {
-    icon: 'user',
+    icon: 'training',
     title: '培训',
-    roles: ['admin']
+    roles: ['admin', 'hr']
   },
   children: [
     {
@@ -14,19 +14,29 @@ const traningRouter = {
       name: 'TrainingProject',
       component: () => import('@/views/training/project'),
       meta: {
-        icon: 'user',
+        icon: 'training',
         title: '培训计划',
-        roles: ['admin']
+        roles: ['admin', 'hr']
       }
     },
     {
-      path: 'trainers',
-      name: 'Trainers',
-      component: () => import('@/views/training/trainers'),
+      path: 'program_assess',
+      name: 'ProgramAssess',
+      component: () => import('@/views/training/trainingAssess'),
       meta: {
-        icon: 'user',
-        title: '培训人员',
-        roles: ['admin']
+        icon: 'assess',
+        title: '培训评价',
+        roles: ['admin', 'hr']
+      }
+    },
+    {
+      path: 'assess/:id',
+      name: 'Assess',
+      component: () => import('@/views/training/assess'),
+      hidden: true,
+      meta: {
+        title: '评价',
+        roles: ['admin', 'hr']
       }
     }
   ]

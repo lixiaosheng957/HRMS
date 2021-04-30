@@ -6,9 +6,9 @@
           <el-col :span="3">
             <h3>员工管理</h3>
           </el-col>
-          <el-col :span="6">
+          <el-col :span="4" :offset="1">
             <el-select
-              v-model="searchByName"
+              v-model="query.id"
               placeholder="名字搜索"
               filterable
               clearable
@@ -23,11 +23,10 @@
                 :value="item.value"
               />
             </el-select>
-            <el-button style="margin-left:10px;" type="primary" icon="el-icon-search" @click="searchBy('name')">搜索</el-button>
           </el-col>
-          <el-col :span="6">
+          <el-col :span="4">
             <el-select
-              v-model="searchByJob"
+              v-model="query.jobId"
               placeholder="根据职位搜索"
               filterable
               clearable
@@ -42,10 +41,9 @@
                 :value="item.value"
               />
             </el-select>
-            <el-button style="margin-left:10px;" type="primary" icon="el-icon-search" @click="searchBy('job')">搜索</el-button>
           </el-col>
-          <el-col :span="6">
-            <el-select v-model="searchByType" placeholder="选择员工类型">
+          <el-col :span="4">
+            <el-select v-model="query.type" clearable placeholder="选择员工类型">
               <el-option
                 v-for="(item,index) in employeeTypeList"
                 :key="index"
@@ -53,7 +51,9 @@
                 :value="item"
               />
             </el-select>
-            <el-button style="margin-left:10px;" type="primary" icon="el-icon-search" @click="searchBy('type')">搜索</el-button>
+          </el-col>
+          <el-col :span="2">
+            <el-button type="primary" icon="el-icon-search" @click="search">查询</el-button>
           </el-col>
           <el-col :span="2" :offset="1">
             <el-button type="primary" icon="el-icon-plus" @click="showAddForm = true">添加员工</el-button>
@@ -62,22 +62,23 @@
       </el-header>
       <el-container>
         <el-aside width="180px">
-          <el-tree ref="tree" :data="departments" default-expand-all :expand-on-click-node="false" node-key="id" highlight-current @node-click="handleClickDepartment" />
+          <el-tree ref="tree" :data="departments" default-expand-all :expand-on-click-node="false" node-key="id" :highlight-current="!isSearch" @node-click="handleClickDepartment" />
         </el-aside>
         <el-main>
-          <el-table v-loading="listLoading" :data="employeeList" border height="530" width="100%" fit element-loading-text="加载中">
+          <el-table v-loading="listLoading" :data="employeeList" border height="560" width="100%" fit element-loading-text="加载中">
             <el-table-column prop="id" label="员工编号" align="center" width="80" />
             <el-table-column prop="name" label="员工姓名" align="center" width="150" />
-            <el-table-column prop="gender" label="性别" align="center" width="80" />
-            <el-table-column prop="phone" label="电话" align="center" width="200" />
+            <el-table-column prop="phone" label="电话" align="center" width="150" />
             <el-table-column prop="job" label="职位" align="center" width="200" />
             <el-table-column prop="type" label="员工类型" align="center" width="200" />
-            <el-table-column label="操作" align="center" fixed="right" width="300">
+            <el-table-column label="操作" align="center" fixed="right" width="420">
               <template slot-scope="scope">
+                <el-button type="primary" size="mini" round :disabled="scope.row.type!=='正式员工'" @click="handleShowRenew(scope.row)">续约</el-button>
                 <el-button type="primary" size="mini" round @click="handleEidtEmployee(scope.row)">修改</el-button>
-                <el-button type="primary" size="mini" round @click="showDetail(scope.row)">详情</el-button>
+                <el-button type="primary" size="mini" round @click="geToDetailView(scope.row)">详情</el-button>
                 <el-button type="primary" size="mini" round @click="handleShowChangeForm(scope.row)">调动</el-button>
-                <el-button type="danger" size="mini" round>离职</el-button>
+                <el-button type="danger" size="mini" round @click="handleEmployeeMove(scope.row)">离职</el-button>
+                <el-button v-if="isAdmin()" type="danger" size="mini" round @click="handleDelete(scope.row)">删除</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -85,20 +86,18 @@
         <el-dialog title="添加员工" :visible.sync="showAddForm" width="60%" top="2vh">
           <el-form ref="addEmployeeForm" :model="addEmployeeForm" label-width="100px" :rules="rules">
             <el-row>
-              <el-col :span="12">
+              <el-col :span="8">
                 <el-form-item label="姓名" prop="name">
                   <el-input v-model="addEmployeeForm.name" type="text" placeholder="请输入员工姓名" />
                 </el-form-item>
               </el-col>
-              <el-col :span="12">
+              <el-col :span="8">
                 <el-form-item label="性别" prop="gender">
                   <el-radio v-model="addEmployeeForm.gender" label="男">男</el-radio>
                   <el-radio v-model="addEmployeeForm.gender" label="女">女</el-radio>
                 </el-form-item>
               </el-col>
-            </el-row>
-            <el-row>
-              <el-col :span="12">
+              <el-col :span="8">
                 <el-form-item label="民族" prop="nation">
                   <el-select v-model="addEmployeeForm.nation" placeholder="请选择民族">
                     <el-option
@@ -110,16 +109,11 @@
                   </el-select>
                 </el-form-item>
               </el-col>
-              <el-col :span="12">
-                <el-form-item label="籍贯" prop="nativePlace">
-                  <el-input v-model="addEmployeeForm.nativePlace" type="text" placeholder="请输入籍贯" />
-                </el-form-item>
-              </el-col>
             </el-row>
             <el-row>
-              <el-col :span="12">
-                <el-form-item label="生日" prop="birthday">
-                  <el-date-picker v-model="addEmployeeForm.birthday" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" />
+              <el-col :span="8">
+                <el-form-item label="籍贯" prop="nativePlace">
+                  <el-input v-model="addEmployeeForm.nativePlace" type="text" placeholder="请输入籍贯" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
@@ -131,7 +125,19 @@
               </el-col>
             </el-row>
             <el-row>
+              <el-col :span="10">
+                <el-form-item label="生日" prop="birthday">
+                  <el-date-picker v-model="addEmployeeForm.birthday" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" />
+                </el-form-item>
+              </el-col>
               <el-col :span="12">
+                <el-form-item label="居住地址" prop="address">
+                  <el-input v-model="addEmployeeForm.address" type="text" placeholder="请输入住址" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="8">
                 <el-form-item label="手机号" prop="phone">
                   <el-input
                     v-model="addEmployeeForm.phone"
@@ -140,13 +146,18 @@
                   />
                 </el-form-item>
               </el-col>
-              <el-col :span="12">
+              <el-col :span="8">
                 <el-form-item label="邮箱" prop="email">
                   <el-input
                     v-model="addEmployeeForm.email"
                     type="text"
                     placeholder="请输入邮箱"
                   />
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="上家单位">
+                  <el-input v-model="addEmployeeForm.lastCompany" type="text" placeholder="请输入上家单位" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -255,18 +266,6 @@
             </el-row>
             <el-row>
               <el-col :span="12">
-                <el-form-item label="居住地址" prop="address">
-                  <el-input v-model="addEmployeeForm.address" type="text" placeholder="请输入住址" />
-                </el-form-item>
-              </el-col>
-              <el-col :span="12">
-                <el-form-item label="上家单位">
-                  <el-input v-model="addEmployeeForm.lastCompany" type="text" placeholder="请输入住址" />
-                </el-form-item>
-              </el-col>
-            </el-row>
-            <el-row>
-              <el-col :span="12">
                 <el-form-item label="合同开始时间" :prop="addEmployeeForm.type!=='实习员工'&&addEmployeeForm.type?'contractBeginDate':''">
                   <el-date-picker v-model="addEmployeeForm.contractBeginDate" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" />
                 </el-form-item>
@@ -274,6 +273,13 @@
               <el-col :span="12">
                 <el-form-item label="合同结束时间" :prop="addEmployeeForm.type!=='实习员工'&&addEmployeeForm.type?'contractEndDate':''">
                   <el-date-picker v-model="addEmployeeForm.contractEndDate" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="8">
+                <el-form-item label="入职时间" prop="joinDate">
+                  <el-date-picker v-model="addEmployeeForm.joinDate" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -403,82 +409,73 @@
             </el-row>
           </el-form>
         </el-dialog>
-        <el-drawer title="员工详情" :visible.sync="showDetailView" direction="rtl" size="30%">
-          <div class="detail-container">
-            <el-form label-width="100px">
-              <el-form-item label="姓名">
-                <span>{{ deatil.name }}</span>
-              </el-form-item>
-              <el-form-item label="性别">
-                <span>{{ deatil.gender }}</span>
-              </el-form-item>
-              <el-form-item label="民族">
-                <span>{{ deatil.nation }}</span>
-              </el-form-item>
-              <el-form-item label="籍贯">
-                <span>{{ deatil.nativePlace }}</span>
-              </el-form-item>
-              <el-form-item label="生日">
-                <span>{{ deatil.birthday }}</span>
-              </el-form-item>
-              <el-form-item label="身份证号">
-                <span>{{ deatil.idCard }}</span>
-              </el-form-item>
-              <el-form-item label="婚姻状况">
-                <span>{{ deatil.wedlock }}</span>
-              </el-form-item>
-              <el-form-item label="邮箱">
-                <span>{{ deatil.email }}</span>
-              </el-form-item>
-              <el-form-item label="手机号">
-                <span>{{ deatil.phone }}</span>
-              </el-form-item>
-              <el-form-item label="学历">
-                <span>{{ deatil.tipTopDegree }}</span>
-              </el-form-item>
-              <el-form-item label="毕业院校">
-                <span>{{ deatil.school }}</span>
-              </el-form-item>
-              <el-form-item label="所学专业">
-                <span>{{ deatil.specialty }}</span>
-              </el-form-item>
-              <el-form-item label="参加工作时间">
-                <span>{{ deatil.workAge }}年</span>
-              </el-form-item>
-              <el-form-item label="在岗状态">
-                <span>{{ deatil.workState }}</span>
-              </el-form-item>
-              <el-form-item label="所属部门">
-                <span>{{ deatil.department }}</span>
-              </el-form-item>
-              <el-form-item label="职位">
-                <span>{{ deatil.job }}</span>
-              </el-form-item>
-              <el-form-item label="工号">
-                <span>{{ deatil.workId }}</span>
-              </el-form-item>
-              <el-form-item label="居住地址">
-                <span>{{ deatil.address }}</span>
-              </el-form-item>
-              <el-form-item label="上家单位">
-                <span>{{ deatil.lastCompany }}</span>
-              </el-form-item>
-              <el-form-item label="合同开始时间">
-                <span>{{ deatil.contractBeginDate }}</span>
-              </el-form-item>
-              <el-form-item label="合同结束时间">
-                <span>{{ deatil.contractEndDate }}</span>
-              </el-form-item>
-            </el-form>
-          </div>
-        </el-drawer>
+        <el-dialog title="员工离职" :visible.sync="showMoveForm">
+          <el-form ref="employeeMoveForm" :model="employeeMoveForm" :rules="moveFormRules" label-width="90px">
+            <el-form-item label="离职原因" prop="reason">
+              <el-input v-model="employeeMoveForm.reason" type="textarea" placeholder="请输入离职原因" />
+            </el-form-item>
+            <el-form-item label="离职时间" prop="moveTime">
+              <el-date-picker v-model="employeeMoveForm.moveTime" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" />
+            </el-form-item>
+            <el-row>
+              <el-col :span="4" :offset="16">
+                <el-button type="primary" @click="submitForm('employeeMoveForm')">确定</el-button>
+              </el-col>
+              <el-col :span="4">
+                <el-button @click="resetForm('employeeMoveForm')">重置</el-button>
+              </el-col>
+            </el-row>
+          </el-form>
+        </el-dialog>
+        <el-dialog title="员工续约" :visible.sync="renewDialog" @close="closeRenewDialog">
+          <el-form ref="renewForm" :model="renewForm" :rules="rules" label-width="130px">
+            <el-row>
+              <el-col :span="24">
+                <el-form-item label="上次合同开始时间">
+                  <el-date-picker v-model="renewForm.beforeContractBeginDate" :disabled="true" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" />
+                  <i class="el-icon-arrow-right" style="font-size:20px; margin-left:10px; margin-right:10px;" />
+                  <el-date-picker v-model="renewForm.beforeContractEndDate" :disabled="true" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="12">
+                <el-form-item label="合同开始时间" prop="contractBeginDate">
+                  <el-date-picker v-model="renewForm.contractBeginDate" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="合同结束时间" prop="contractEndDate">
+                  <el-date-picker v-model="renewForm.contractEndDate" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="4" :offset="16">
+                <el-button type="primary" @click="submitForm('renewForm')">提交</el-button>
+              </el-col>
+              <el-col :span="4">
+                <el-button @click="resetForm('renewForm')">重置</el-button>
+              </el-col>
+            </el-row>
+          </el-form>
+        </el-dialog>
       </el-container>
     </el-container>
   </div>
 </template>
 
 <script>
-import { getEmployeeList, addEmployee, getEmployee, editEmployee, transfer } from '@/api/employee'
+import { mapGetters } from 'vuex'
+import { getEmployeeList,
+  addEmployee,
+  getEmployee,
+  editEmployee,
+  transfer,
+  employeeMove,
+  employeeRenew,
+  deleteEmployee
+} from '@/api/employee'
 import { tipTopDegree, nation, employeeType, transferType } from '@/utils/infoList'
 import { getDepartments } from '@/api/department'
 import { getJobList } from '@/api/job'
@@ -509,7 +506,7 @@ export default {
     const checkIdCard = (rule, value, callback) => {
       if (!value) {
         callback(new Error('请输入身份证'))
-      } else if (!validIdCard(value).code) {
+      } else if (validIdCard(value).code === -1) {
         callback(new Error('身份证号格式不正确'))
       } else {
         callback()
@@ -520,16 +517,19 @@ export default {
       searchDepartmentLoading: false,
       searchJobLoading: false,
       employeeList: [],
-      searchByName: '',
-      searchByJob: '',
-      searchByType: '',
+      isSearch: false,
+      query: {
+        id: null,
+        jobId: null,
+        type: ''
+      },
       searchNameLoading: false,
       departments: [],
-      currentFilterDepartmentKey: null,
+      currentFilterDepartmentKey: 1,
       showAddForm: false,
       showEditForm: false,
-      showDetailView: false,
       showChangeForm: false,
+      showMoveForm: false,
       addEmployeeForm: {
         name: '',
         gender: '',
@@ -552,7 +552,8 @@ export default {
         address: '',
         contractBeginDate: null,
         contractEndDate: null,
-        lastCompany: ''
+        lastCompany: '',
+        joinDate: null
       },
       rules: {
         name: [{ required: true, message: '员工姓名不能为空', trigger: 'blur' }],
@@ -574,7 +575,8 @@ export default {
         jobLevelId: [{ required: true, message: '职位不能为空', trigger: 'blur' }],
         address: [{ required: true, message: '居住地址不能为空', trigger: 'blur' }],
         contractBeginDate: [{ required: true, message: '合同开始时间不能为空', trigger: 'blur' }],
-        contractEndDate: [{ required: true, message: '合同结束时间不能为空', trigger: 'blur' }]
+        contractEndDate: [{ required: true, message: '合同结束时间不能为空', trigger: 'blur' }],
+        joinDate: [{ required: true, message: '入职时间不能为空', trigger: 'blur' }]
       },
       editEmployeeForm: {
         id: null,
@@ -634,21 +636,50 @@ export default {
         contractBeginDate: [{ required: true, message: '变动后合同开始时间不能为空', trigger: 'blur' }],
         contractEndDate: [{ required: true, message: '变动后合同结束时间不能为空', trigger: 'blur' }]
       },
-      employeeTagsList: null
+      employeeTagsList: null,
+      employeeMoveForm: {
+        employeeId: null,
+        reason: '',
+        moveTime: null
+      },
+      moveFormRules: {
+        reason: [{ required: true, message: '离职原因不能为空', trigger: 'blur' }],
+        moveTime: [{ required: true, message: '离职时间不能为空', trigger: 'blur' }]
+      },
+      renewDialog: false,
+      renewForm: {
+        employeeId: null,
+        beforeContractBeginDate: null,
+        beforeContractEndDate: null,
+        contractBeginDate: null,
+        contractEndDate: null
+      }
     }
+  },
+  computed: {
+    ...mapGetters([
+      'roles'
+    ])
   },
   async created() {
     await this.getDepartmentsFilter()
-    await this.fetchData({ departmentId: 1 })
+    await this.fetchData()
     this.$nextTick(() => {
       this.$refs.tree.setCurrentKey(1)
       this.currentFilterDepartmentKey = 1
     })
   },
   methods: {
-    async fetchData(params) {
+    async fetchData(params = {}, search = false) {
       try {
         this.listLoading = true
+        if (!search) {
+          this.isSearch = false
+          params.departmentId = this.currentFilterDepartmentKey
+        } else {
+          this.isSearch = true
+          this.currentFilterDepartmentKey = null
+        }
         this.employeeList = await getEmployeeList(params)
         this.listLoading = false
       } catch (error) {
@@ -705,10 +736,8 @@ export default {
     },
     async handleClickDepartment(data) {
       try {
-        await this.fetchData({
-          departmentId: data.id
-        })
         this.currentFilterDepartmentKey = data.id
+        await this.fetchData()
       } catch (error) {
         console.log(error)
       }
@@ -772,6 +801,45 @@ export default {
               console.log(error)
             }
           }
+          if (this.showMoveForm) {
+            try {
+              await employeeMove(this.employeeMoveForm)
+              Message({
+                message: '操作成功',
+                type: 'success',
+                duration: '2000'
+              })
+              this.showMoveForm = false
+              this.resetForm(formName)
+              this.employeeMoveForm.employeeId = null
+              this.fetchData()
+            } catch (error) {
+              return
+            }
+          }
+          if (this.renewDialog) {
+            try {
+              const submitObj = {
+                employeeId: this.renewForm.employeeId,
+                contractBeginDate: this.renewForm.contractBeginDate,
+                contractEndDate: this.renewForm.contractEndDate
+              }
+              await employeeRenew(submitObj)
+              Message({
+                message: '续约成功',
+                type: 'success',
+                duration: '2000'
+              })
+              this.renewForm.employeeId = null
+              this.renewForm.beforeContractBeginDate = null
+              this.renewForm.beforeContractEndDate = null
+              this.resetForm(formName)
+              this.renewDialog = false
+              this.fetchData()
+            } catch (error) {
+              return
+            }
+          }
         } else {
           console.log('error submit!!')
           return false
@@ -793,47 +861,28 @@ export default {
         console.log(error)
       }
     },
-    async showDetail({ id }) {
-      console.log(this.$refs.tree.getCurrentKey())
-      this.showDetailView = true
-      try {
-        this.deatil = await getEmployee({ id })
-      } catch (error) {
-        console.log(error)
-      }
-    },
     handleShowChangeForm({ id }) {
       this.showChangeForm = true
       this.transferForm.employeeId = id
     },
-    async searchBy(keyword) {
-      if (keyword === 'name') {
-        if (this.searchByName) {
-          await this.fetchData({
-            departmentId: this.currentFilterDepartmentKey,
-            id: this.searchByName
-          })
-          this.searchByName = null
-        }
+    search() {
+      if (this.checkQuery()) {
+        const queryObj = {}
+        Object.keys(this.query).forEach(key => {
+          if (this.query[key]) {
+            queryObj[key] = this.query[key]
+          }
+        })
+        this.fetchData(queryObj, true)
+      } else {
+        this.fetchData(null, true)
       }
-      if (keyword === 'job') {
-        console.log(keyword)
-        if (this.searchByJob) {
-          await this.fetchData({
-            departmentId: this.currentFilterDepartmentKey,
-            jobId: this.searchByJob
-          })
-          this.searchByJob = null
-        }
-      }
-      if (keyword === 'type') {
-        if (this.searchByType) {
-          await this.fetchData({
-            departmentId: this.currentFilterDepartmentKey,
-            type: this.searchByType
-          })
-          this.searchByType = null
-        }
+    },
+    checkQuery() {
+      if (this.query.id || this.query.jobId || this.query.type) {
+        return true
+      } else {
+        return false
       }
     },
     async getEmployeeTagsList(query) {
@@ -848,16 +897,53 @@ export default {
         }
       }
     },
-    handleEmployeeMove() {
-
+    handleEmployeeMove({ id }) {
+      this.showMoveForm = true
+      this.employeeMoveForm.employeeId = id
+    },
+    geToDetailView({ id }) {
+      this.$router.push({
+        path: `/personnel-information/detail/${id}`
+      })
+    },
+    handleShowRenew(row) {
+      this.renewDialog = true
+      this.renewForm.beforeContractBeginDate = row.contractBeginDate
+      this.renewForm.beforeContractEndDate = row.contractEndDate
+      this.renewForm.employeeId = row.id
+    },
+    closeRenewDialog() {
+      this.renewForm.employeeId = null
+      this.renewForm.beforeContractBeginDate = null
+      this.renewForm.beforeContractEndDate = null
+      this.resetForm('renewForm')
+    },
+    isAdmin() {
+      if (this.roles.includes('admin')) {
+        return true
+      } else {
+        return false
+      }
+    },
+    handleDelete({ id }) {
+      this.$confirm('确认删除吗', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async() => {
+        await deleteEmployee({ id: id })
+        Message({
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
+        this.fetchData()
+      }).catch(_ => {})
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.detail-container{
-  height: calc(100vh - 44.4px);
-  overflow: scroll;
-}
+
 </style>

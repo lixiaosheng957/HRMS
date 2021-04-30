@@ -5,18 +5,20 @@ from app.models.employee_transfer import EmployeeTransfer, employee_transfer_sch
 from app.models.base import db
 from app.models.department import Department
 from app.models.job_level import JobLevel
+from app.models.employee_move import EmployeeMoveRecord, employee_move_record_schema, employee_move_records_schema
 from app.models.opLog import OperateLog
 from app.libs.token_auth import login_required
 from app.libs.expection import DatabaseRecordRepeat
 from app.libs.status_code import Success, ParameterException, DeleteSuccess
 from marshmallow import ValidationError
 from sqlalchemy import and_
+import datetime
 
 api = Redprint('employee')
 
 
 @api.route('/add', methods=['POST'])
-@login_required(['admin'])
+@login_required(['admin', 'hr'])
 def add_employee():
     json_data = request.get_json()
     if not json_data:
@@ -41,7 +43,7 @@ def add_employee():
 
 
 @api.route('/modify', methods=['POST'])
-@login_required(['admin'])
+@login_required(['admin', 'hr'])
 def modify_employee():
     json_data = request.get_json()
     if not json_data:
@@ -60,7 +62,7 @@ def modify_employee():
 
 
 @api.route('/getlist')
-@login_required(['admin'])
+@login_required(['admin', 'hr'])
 def get_employee_list():
     employees_list = None
     if not request.args:
@@ -73,8 +75,11 @@ def get_employee_list():
         job_id = request.args.get('jobId')
         employee_type = request.args.get('type')
         if tags:
-            employees_list = Employee.query.filter(
-                and_(Employee.name.like(f'%{name}%'), Employee.workState == "在职", Employee.status == 1))
+            if name:
+                employees_list = Employee.query.filter(
+                    and_(Employee.name.like(f'%{name}%'), Employee.workState == "在职", Employee.status == 1))
+            else:
+                employees_list = Employee.query.filter_by().all()
             result = []
             for item in employees_list:
                 json = {
@@ -83,18 +88,18 @@ def get_employee_list():
                 }
                 result.append(json)
             return jsonify(result)
+        params = []
         if department_id:
-            if department_id and employee_id:
-                employees_list = Employee.query.filter_by(id=employee_id, departmentId=department_id,
-                                                          workState="在职").all()
-            elif department_id and job_id:
-                employees_list = Employee.query.filter_by(departmentId=department_id, jobLevelId=job_id,
-                                                          workState="在职").all()
-            elif department_id and employee_type:
-                employees_list = Employee.query.filter_by(departmentId=department_id, type=employee_type,
-                                                          workState="在职").all()
-            else:
-                employees_list = Employee.query.filter_by(departmentId=department_id, workState="在职").all()
+            params.append(Employee.departmentId == department_id)
+        if employee_id:
+            params.append(Employee.id == employee_id)
+        if job_id:
+            params.append(Employee.jobLevelId == job_id)
+        if employee_type:
+            params.append(Employee.type == employee_type)
+        params.append(Employee.workState == '在职')
+        params.append(Employee.status == 1)
+        employees_list = Employee.query.filter(*params).all()
     result = employees_schema.dump(employees_list)
     for index, item in enumerate(result):
         item['job'] = employees_list[index].job_level.name
@@ -102,18 +107,44 @@ def get_employee_list():
 
 
 @api.route('/get-employee')
-@login_required(['admin'])
+@login_required(['admin', 'hr'])
 def get_employee():
     employee_id = int(request.args.get('id'))
     employee = Employee.query.filter_by(id=employee_id).first_or_404()
     result = employee_schema.dump(employee)
     result['department'] = employee.department.name
     result['job'] = employee.job_level.name
+    result['transferRecord'] = []
+    result['trainingRecord'] = []
+    for item in employee.training_record:
+        json = {
+            'programName': item.training_program.name,
+            'programStartDate': item.training_program.beginDate.strftime('%Y-%m-%d'),
+            'programEndDate': item.training_program.endDate.strftime('%Y-%m-%d'),
+            'isFinish': item.isFinish,
+            'assess': item.assess,
+            'level': item.level
+        }
+        result['trainingRecord'].append(json)
+    for item in employee.transfer_record:
+        json = {
+            'transferType': item.transferType,
+            'transferDepartment': item.employee_info.department.name,
+            'transferJob': item.employee_info.job_level.name,
+            'transferTime': item.transferTime.strftime('%Y-%m-%d')
+        }
+        before_transfer_department = Department.query.filter(Department.id == item.beforeTransferDepartmentId).first()
+        if before_transfer_department:
+            json['beforeTransferDepartment'] = before_transfer_department.name
+        before_transfer_job = JobLevel.query.filter(JobLevel.id == item.beforeTransferJobId).first()
+        if before_transfer_job:
+            json['beforeTransferJob'] = before_transfer_job.name
+        result['transferRecord'].append(json)
     return jsonify(result)
 
 
 @api.route('/search-by-name-or-id')
-@login_required(['admin'])
+@login_required(['admin', 'hr'])
 def search_by_name_or_id():
     keyword = request.args.get('keyword')
     if keyword:
@@ -131,9 +162,10 @@ def search_by_name_or_id():
 @api.route('/delete', methods=['POST'])
 @login_required(['admin'])
 def delete_employee():
-    employee_id = request.get_json()['id']
+    json_data = request.get_json()
+    employee_id = json_data.get('id')
     if not employee_id:
-        return ParameterException()
+        return ParameterException(msg="缺少员工ID")
     employee = Employee.query.filter_by(id=employee_id).first_or_404()
     with db.auto_commit():
         employee.status = 0
@@ -184,9 +216,53 @@ def employee_transfer():
 
 
 @api.route('/move', methods=['post'])
-@login_required(['admin'])
+@login_required(['admin', 'hr'])
 def employee_move():
-    pass
+    json_data = request.get_json()
+    if not json_data:
+        return ParameterException(msg="数据为空")
+    try:
+        data = employee_move_record_schema.load(json_data)
+    except ValidationError as err:
+        return ParameterException(msg=err.messages)
+    employee = Employee.query.filter_by(id=data['employeeId']).first()
+    if not employee:
+        return ParameterException(msg="没有此员工")
+    with db.auto_commit():
+        employee_move_record = EmployeeMoveRecord()
+        for key, value in data.items():
+            setattr(employee_move_record, key, value)
+        db.session.add(employee_move_record)
+        employee.workState = "离职"
+    OperateLog.write_log(g.user.uid, '员工操作', f'员工{employee.name}离职')
+    return Success()
+
+
+@api.route('/get-employee-move-list')
+@login_required(['admin', 'hr'])
+def get_employee_move_list():
+    name = request.args.get('name')
+    if name:
+        employee_move_list = Employee.query.filter(Employee.name.like(f'%{name}%'), Employee.workState == "离职",
+                                                   Employee.status == 1).all()
+    else:
+        employee_move_list = Employee.query.filter_by(workState="离职").all()
+    result = employees_schema.dump(employee_move_list)
+    for index, item in enumerate(result):
+        item['job'] = employee_move_list[index].job_level.name
+        item['department'] = employee_move_list[index].department.name
+    return jsonify(result)
+
+
+@api.route('/get-employee-move-detail')
+@login_required(['admin', 'hr'])
+def get_employee_move_detail():
+    employee_id = request.args.get('id')
+    if not employee_id:
+        return ParameterException(msg="没有指定记录ID")
+    record = EmployeeMoveRecord.query.filter_by(employeeId=employee_id).first_or_404()
+    result = employee_move_record_schema.dump(record)
+    return jsonify(result)
 
 
 @api.route('/get-transfer-records')
@@ -253,3 +329,28 @@ def get_transfer_detail():
     else:
         result['beforeTransferJobName'] = None
     return jsonify(result)
+
+
+@api.route('/renew', methods=['POST'])
+@login_required(['admin','hr'])
+def employee_renew():
+    json_data = request.get_json()
+    a = json_data.get('contractBeginDate')
+    if not json_data:
+        return ParameterException("数据为空")
+    employee_id = json_data.get('employeeId')
+    employee = Employee.query.filter_by(id=employee_id).first_or_404()
+    del json_data['employeeId']
+    if not json_data.get('contractBeginDate') and not json_data.get('contractEndDate'):
+        return ParameterException(msg="缺少开始日期或结束日期")
+    try:
+        data = employee_schema.load(json_data, partial=True)
+    except ValidationError as err:
+        return ParameterException(msg=err.messages)
+    if employee.contractEndDate > datetime.date.today():
+        return ParameterException(msg="合同未到期，不能续约")
+    with db.auto_commit():
+        employee.contractBeginDate = data['contractBeginDate']
+        employee.contractEndDate = data['contractEndDate']
+    OperateLog.write_log(g.user.uid, '员工操作', f'员工{employee.name}续约')
+    return Success()

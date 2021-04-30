@@ -7,9 +7,9 @@ Vue.use(Router)
 import Layout from '@/layout'
 import userRouter from '@/router/module/user'
 import employeeRouter from '@/router/module/employee'
-import attendanceRouter from '@/router/module/attendance'
 import traningRouter from '@/router/module/traning'
-import appliactionRouter from '@/router/module/applicate'
+import operateLogRouter from '@/router/module/operateLog'
+import settingRouter from '@/router/module/setting'
 /**
  * Note: sub-menu only appear when route children.length >= 1
  * Detail see: https://panjiachen.github.io/vue-element-admin-site/guide/essentials/router-and-nav.html
@@ -63,16 +63,15 @@ export const constantRoutes = [
 export const asyncRoutes = [
   userRouter,
   employeeRouter,
-  attendanceRouter,
   traningRouter,
   {
     path: '/organization',
     component: Layout,
     redirect: '/organization/department',
     meta: {
-      icon: 'user',
+      icon: 'organization',
       title: '组织',
-      roles: ['admin']
+      roles: ['admin', 'hr']
     },
     children: [
       {
@@ -92,12 +91,13 @@ export const asyncRoutes = [
         meta: {
           icon: 'user',
           title: '职位',
-          roles: ['admin']
+          roles: ['admin', 'hr']
         }
       }
     ]
   },
-  appliactionRouter,
+  operateLogRouter,
+  settingRouter,
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]

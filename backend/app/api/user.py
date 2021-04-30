@@ -6,9 +6,11 @@ from app.models.role import Role
 from app.models.base import db
 from app.models.opLog import OperateLog
 from app.libs.token_auth import login_required
-from app.libs.status_code import Success, ParameterException
+from app.libs.status_code import Success, ParameterException, DeleteSuccess
 from marshmallow import ValidationError
 from sqlalchemy import and_
+from sqlalchemy.exc import IntegrityError
+import uuid
 
 api = Redprint('user')
 
@@ -45,7 +47,7 @@ def logout():
 
 
 @api.route('/get-userinfo')
-@login_required(['admin'])
+@login_required(['admin', 'hr', 'employee'])
 def get_userinfo():
     uid = g.user.uid
     user_info = User.query.filter_by(id=uid).first_or_404()
@@ -75,6 +77,24 @@ def get_user_list():
     return jsonify(result)
 
 
+@api.route('/get-user-tags-list')
+@login_required(['admin'])
+def get_user_tags_list():
+    username = request.args.get('username')
+    if username:
+        user_list = User.query.filter(User.username.like(f'%{username}%'), User.status == 1).all()
+    else:
+        user_list = User.query.filter_by().all()
+    result = []
+    for item in user_list:
+        json = {
+            'value': item.id,
+            'label': item.username
+        }
+        result.append(json)
+    return jsonify(result)
+
+
 @api.route('/add', methods=['POST'])
 @login_required(['admin'])
 def add_user():
@@ -93,33 +113,73 @@ def add_user():
             roles_list.append(role)
         else:
             return ParameterException(msg="没有此项权限!")
-    with db.auto_commit():
-        user = User()
-        user.username = data['username']
-        user.password = data['password']
-        if data['holderId']:
-            user.holderId = data['holderId']
-        user.roles = roles_list
+    try:
+        with db.auto_commit():
+            user = User()
+            user.username = data['username']
+            user.password = data['password']
+            if data['holderId']:
+                user.holderId = data['holderId']
+            user.roles = roles_list
+    except IntegrityError:
+        return ParameterException(msg="用户名已存在")
     OperateLog.write_log(g.user.uid, '账户操作', f'添加账户{user.username}')
     return Success()
 
 
-@api.route('/modify')
+@api.route('/modify-password', methods=['POST'])
 @login_required(['admin'])
 def modify_user():
     json_data = request.get_json()
     if not json_data:
         return ParameterException()
+    if not json_data.get('id'):
+        return ParameterException(msg="缺少要修改账户的ID")
     try:
-        data = user_schema.load(json_data)
+        account_id = int(json_data.get('id'))
+    except ValueError:
+        return ParameterException("账户ID格式错误")
+    user = User.query.filter_by(id=account_id).first_or_404()
+    del json_data['id']
+    try:
+        data = user_schema.load(json_data, partial=True)
     except ValidationError as err:
         return ParameterException(msg=err.messages)
-    user = User.query.filter_by(id=data['id']).first_or_404()
     with db.auto_commit():
-        for key, value in data.items():
-            setattr(user, key, value)
-    OperateLog.write_log(g.user.uid, '账户操作', f'修改账户{user.username}')
+        user.password = data['password']
+    OperateLog.write_log(g.user.uid, '账户操作', f'修改账户{user.username}的密码')
     return Success()
+
+
+@api.route('/change-password', methods=['POST'])
+@login_required(['admin', 'hr'])
+def change_password():
+    json_data = request.get_json()
+    if not json_data:
+        ParameterException(msg="数据为空")
+    try:
+        data = user_schema.load(json_data, partial=True)
+    except ValidationError as err:
+        return ParameterException(msg=err.messages)
+    user = User.query.filter_by(id=g.user.uid).first_or_404()
+    with db.auto_commit():
+        user.password = data['password']
+    return Success()
+
+
+@api.route('/delete', methods=['POST'])
+@login_required(['admin'])
+def delete_user():
+    json_data = request.get_json()
+    if not json_data:
+        return ParameterException(msg="数据为空")
+    user_id = json_data.get('id')
+    if not user_id:
+        return ParameterException(msg="缺少账号ID")
+    account = User.query.filter_by(id=user_id).first_or_404()
+    with db.auto_commit():
+        db.session.delete(account)
+    return DeleteSuccess()
 
 
 def generate_auth_token(uid, username, roles, holder_id, expiration=7200):

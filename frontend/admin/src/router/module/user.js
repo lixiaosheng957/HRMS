@@ -9,7 +9,7 @@ const userRouter = {
       component: () => import('@/views/user'),
       name: 'Account',
       meta: {
-        icon: 'user',
+        icon: 'account',
         title: '账号管理',
         roles: ['admin']
       }

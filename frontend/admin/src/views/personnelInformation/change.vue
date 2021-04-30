@@ -27,14 +27,6 @@
           <el-col :span="2">
             <el-button type="primary" icon="el-icon-search" @click="search">搜索</el-button>
           </el-col>
-          <el-col :span="4" :offset="8">
-            <el-switch
-              v-model="searchMine"
-              active-text="查看我的"
-              inactive-text="查看全部"
-              @change="filterData"
-            />
-          </el-col>
         </el-row>
       </el-header>
       <el-main>
@@ -246,13 +238,6 @@ export default {
     },
     search() {
       this.fetchData({ employeeId: this.searchByName })
-    },
-    filterData() {
-      if (this.searchByName) {
-        this.fetchData({ employeeId: this.searchByName })
-      } else {
-        this.filterData()
-      }
     }
   }
 }

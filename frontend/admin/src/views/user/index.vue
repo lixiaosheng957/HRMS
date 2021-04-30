@@ -53,9 +53,9 @@
             </template>
           </el-table-column>
           <el-table-column label="操作" align="center">
-            <template>
-              <el-button type="primary" size="mini">修改</el-button>
-              <el-button type="danger" size="mini">删除</el-button>
+            <template slot-scope="scope">
+              <el-button type="primary" size="mini" @click="handleShowChangePasswordForm(scope.row)">修改</el-button>
+              <el-button type="danger" size="mini" :disabled="isAdmin(scope.row)" @click="handleDelete(scope.row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -91,9 +91,7 @@
           </el-form-item>
           <el-form-item label="权限" label-width="90px" prop="roles">
             <el-checkbox-group v-model="addUserForm.roles">
-              <el-checkbox label="admin" />
               <el-checkbox label="hr" />
-              <el-checkbox label="employee" />
             </el-checkbox-group>
           </el-form-item>
           <el-form-item>
@@ -108,12 +106,30 @@
           </el-form-item>
         </el-form>
       </el-dialog>
+      <el-dialog title="修改密码" :visible.sync="changePwdDialog" width="40%" @close="closeChangePasswordForm">
+        <el-form ref="changePasswordForm" :model="changePasswordForm" :rules="rules">
+          <el-form-item label="密码" label-width="90px" prop="password">
+            <el-input v-model="changePasswordForm.password" type="password" placeholder="请输入密码" />
+          </el-form-item>
+          <el-form-item label="确认密码" label-width="90px" prop="confirmPassword">
+            <el-input v-model="changePasswordForm.confirmPassword" type="password" placeholder="再次输入密码" />
+          </el-form-item>
+          <el-row>
+            <el-col :span="4" :offset="16">
+              <el-button type="primary" @click="submitChangePasswordForm('changePasswordForm')">确定</el-button>
+            </el-col>
+            <el-col :span="4">
+              <el-button @click="resetForm('changePasswordForm')">重置</el-button>
+            </el-col>
+          </el-row>
+        </el-form>
+      </el-dialog>
     </el-container>
   </div>
 </template>
 
 <script>
-import { getUserList, addUser } from '@/api/user'
+import { getUserList, addUser, changePassword, deleteAccount } from '@/api/user'
 import { getEmployeeList } from '@/api/employee'
 import { Message } from 'element-ui'
 export default {
@@ -145,7 +161,8 @@ export default {
     const checkConfirmPassword = (rule, value, callback) => {
       if (!value) {
         callback(new Error('请再次输入密码'))
-      } else if (value !== this.addUserForm.password) {
+      } else if (value !== this.addUserForm.password && this.showAddForm ||
+       value !== this.changePasswordForm.password && this.changePwdDialog) {
         callback(new Error('两次输入密码不一致'))
       } else {
         callback()
@@ -192,7 +209,13 @@ export default {
           }
         ]
       },
-      employeeList: []
+      employeeList: [],
+      changePwdDialog: false,
+      changePasswordForm: {
+        id: '',
+        password: '',
+        confirmPassword: ''
+      }
     }
   },
   created() {
@@ -219,14 +242,15 @@ export default {
         if (valid) {
           console.log(this.addUserForm)
           try {
+            const submitObj = JSON.parse(JSON.stringify(this.addUserForm))
             const submitRoles = []
             this.addUserForm.roles.forEach(role => {
               const obj = {}
               obj.name = role
               submitRoles.push(obj)
             })
-            this.addUserForm.roles = submitRoles
-            await addUser(this.addUserForm)
+            submitObj.roles = submitRoles
+            await addUser(submitObj)
             Message({
               message: '添加成功',
               type: 'success',
@@ -257,6 +281,64 @@ export default {
           console.log(error)
         }
       }
+    },
+    isAdmin({ roles }) {
+      let flag = false
+      roles.forEach(item => {
+        if (item.name === 'admin') {
+          flag = true
+        }
+      })
+      return flag
+    },
+    handleShowChangePasswordForm({ id }) {
+      this.changePwdDialog = true
+      this.changePasswordForm.id = id
+    },
+    submitChangePasswordForm(formName) {
+      this.$refs[formName].validate(async(valid) => {
+        if (valid) {
+          try {
+            const submitObj = {
+              id: this.changePasswordForm.id,
+              password: this.changePasswordForm.password
+            }
+            await changePassword(submitObj)
+            Message({
+              message: '修改成功',
+              type: 'success',
+              duration: 2000
+            })
+            this.changePasswordForm.id = null
+            this.resetForm(formName)
+            this.changePwdDialog = false
+            this.fetchData()
+          } catch (error) {
+            return
+          }
+        } else {
+          return
+        }
+      })
+    },
+    closeChangePasswordForm() {
+      this.changePasswordForm.id = null
+      this.resetForm('changePasswordForm')
+    },
+    handleDelete({ id }) {
+      this.$confirm('确认删除吗,此操作会永久删除', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async() => {
+        await deleteAccount({ id: id })
+        Message({
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
+        this.fetchData()
+      }).catch(_ => {})
     }
   }
 }

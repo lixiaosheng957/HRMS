@@ -32,7 +32,7 @@ class ParameterException(APIException):
 
 class NotFound(APIException):
     code = 404
-    msg = 'the resource are not found O__O...'
+    msg = '数据库不存在此记录'
     error_code = 1001
 
 
@@ -45,5 +45,5 @@ class AuthFailed(APIException):
 class Forbidden(APIException):
     code = 403
     error_code = 1004
-    msg = 'forbidden, not in scope'
+    msg = '没有访问权限'
 

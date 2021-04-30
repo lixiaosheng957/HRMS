@@ -5,9 +5,9 @@ const employeeRouter = {
   component: Layout,
   redirect: '/personnel-information/employee',
   meta: {
-    icon: 'user',
-    title: '人员信息',
-    roles: ['admin']
+    icon: 'employee',
+    title: '员工',
+    roles: ['admin', 'hr']
   },
   children: [
     {
@@ -15,9 +15,19 @@ const employeeRouter = {
       component: () => import('@/views/personnelInformation/employee'),
       name: 'Employee',
       meta: {
-        icon: 'user',
+        icon: 'employee',
         title: '员工管理',
-        roles: ['admin']
+        roles: ['admin', 'hr']
+      }
+    },
+    {
+      path: 'detail/:id',
+      component: () => import('@/views/personnelInformation/employeeDetail'),
+      name: 'EmployeeDetail',
+      hidden: true,
+      meta: {
+        title: '员工详情',
+        roles: ['admin', 'hr']
       }
     },
     {
@@ -25,9 +35,9 @@ const employeeRouter = {
       component: () => import('@/views/personnelInformation/resign'),
       name: 'ResignEmployee',
       meta: {
-        icon: 'user',
+        icon: 'resign',
         title: '离职员工',
-        roles: ['admin']
+        roles: ['admin', 'hr']
       }
     },
     {
@@ -37,7 +47,7 @@ const employeeRouter = {
       meta: {
         icon: 'user',
         title: '变动记录',
-        roles: ['admin']
+        roles: ['admin', 'hr']
       }
     }
   ]
