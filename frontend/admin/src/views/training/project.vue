@@ -396,6 +396,7 @@ export default {
               throw new Error('notSelected')
             }
             submitObj.isPublish = true
+            submitObj.isFinishAssess = false
             await addTrainingProgram(submitObj)
             Message({
               message: '添加成功',

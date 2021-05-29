@@ -4,9 +4,6 @@
       <el-col :span="4">
         <el-page-header content="评价" @back="goBack" />
       </el-col>
-      <el-col :span="8">
-        当前项目:{{ programName }}
-      </el-col>
     </el-row>
     <el-container>
       <el-main>

@@ -4,8 +4,9 @@ from app.models.training_program import TrainingProgram
 import datetime
 
 
-@scheduler.task('cron', id='do_job_check_training_program_end', hour='06', minute='00', second='00')
+@scheduler.task('cron', id='do_job_check_training_program_end', hour='15', minute='55', second='00')
 def job1():
+    print(123)
     now_date = str(datetime.date.today())
     end_program_list = TrainingProgram.query.filter(
         TrainingProgram.endDate < datetime.datetime.strptime(now_date, '%Y-%m-%d'), TrainingProgram.status == 1,

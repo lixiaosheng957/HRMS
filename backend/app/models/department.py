@@ -1,4 +1,4 @@
-from app.models.base import Base, db, BaseQuery
+from app.models.base import Base, db
 from sqlalchemy import Column, Table, Integer, ForeignKey, String, DateTime, Enum, Boolean
 from marshmallow import Schema, fields, validate, ValidationError, pre_dump, post_dump
 from marshmallow.utils import is_collection

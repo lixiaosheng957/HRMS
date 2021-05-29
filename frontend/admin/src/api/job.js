@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getJobList(parms) {
   return request({
-    url: 'job-level/get-job-level-list',
+    url: '/api/job-level/get-job-level-list',
     method: 'get',
     params: { ...parms }
   })
@@ -10,7 +10,7 @@ export function getJobList(parms) {
 
 export function addJob(data) {
   return request({
-    url: '/job-level/add',
+    url: '/api/job-level/add',
     method: 'post',
     data: data
   })
@@ -18,7 +18,7 @@ export function addJob(data) {
 
 export function deleteJob(data) {
   return request({
-    url: '/job-level/delete',
+    url: '/api/job-level/delete',
     method: 'post',
     data: data
   })

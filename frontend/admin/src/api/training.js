@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function addTrainingProgram(data) {
   return request({
-    url: '/training/add-training-program',
+    url: '/api/training/add-training-program',
     method: 'post',
     data: data
   })
@@ -10,7 +10,7 @@ export function addTrainingProgram(data) {
 
 export function deleteTrainingProgram(data) {
   return request({
-    url: '/training/delete-training-program',
+    url: '/api/training/delete-training-program',
     method: 'post',
     data: data
   })
@@ -18,7 +18,7 @@ export function deleteTrainingProgram(data) {
 
 export function getTrainingProgramList(params) {
   return request({
-    url: '/training/get-program-list',
+    url: '/api/training/get-program-list',
     method: 'get',
     params: { ...params }
   })
@@ -26,7 +26,7 @@ export function getTrainingProgramList(params) {
 
 export function getTrainingProgramDetail(params) {
   return request({
-    url: '/training/get-program-detail',
+    url: '/api/training/get-program-detail',
     method: 'get',
     params: { ...params }
   })
@@ -34,7 +34,7 @@ export function getTrainingProgramDetail(params) {
 
 export function searchTrainingProgram(params) {
   return request({
-    url: '/training/get-program-list',
+    url: '/api/training/get-program-list',
     method: 'get',
     params: { ...params }
   })
@@ -42,7 +42,7 @@ export function searchTrainingProgram(params) {
 
 export function publishProgram(data) {
   return request({
-    url: '/training/publish',
+    url: '/api/training/publish',
     method: 'post',
     data: data
   })
@@ -50,7 +50,7 @@ export function publishProgram(data) {
 
 export function editProgramBaseInfo(data) {
   return request({
-    url: '/training/modify-program-base',
+    url: '/api/training/modify-program-base',
     method: 'post',
     data: data
   })
@@ -58,7 +58,7 @@ export function editProgramBaseInfo(data) {
 
 export function editProgramParticipant(data) {
   return request({
-    url: '/training/modify-training-people',
+    url: '/api/training/modify-training-people',
     method: 'post',
     data: data
   })
@@ -66,7 +66,7 @@ export function editProgramParticipant(data) {
 
 export function getUnfinishAssessProgramList(params) {
   return request({
-    url: '/training/get-undone-access-program-list',
+    url: '/api/training/get-undone-access-program-list',
     method: 'get',
     params
   })
@@ -74,7 +74,7 @@ export function getUnfinishAssessProgramList(params) {
 
 export function getUndoneAccessPeople(params) {
   return request({
-    url: '/training/get-undone-access-people',
+    url: '/api/training/get-undone-access-people',
     method: 'get',
     params
   })
@@ -82,7 +82,7 @@ export function getUndoneAccessPeople(params) {
 
 export function assess(data) {
   return request({
-    url: '/training/assess',
+    url: '/api/training/assess',
     method: 'post',
     data: data
   })
@@ -90,7 +90,7 @@ export function assess(data) {
 
 export function getunFinishProgramDoneAssessList(params) {
   return request({
-    url: '/training/get-undone-assess-program-done-assess-people-list',
+    url: '/api/training/get-undone-assess-program-done-assess-people-list',
     method: 'get',
     params
   })
@@ -98,7 +98,7 @@ export function getunFinishProgramDoneAssessList(params) {
 
 export function getFinishAssProgramList(params) {
   return request({
-    url: '/training/get-done-assess-program-list',
+    url: '/api/training/get-done-assess-program-list',
     method: 'get',
     params
   })
@@ -106,7 +106,7 @@ export function getFinishAssProgramList(params) {
 
 export function getFinishAssProgramDetail(params) {
   return request({
-    url: '/training/get-done-assess-program-detail',
+    url: '/api/training/get-done-assess-program-detail',
     method: 'get',
     params
   })

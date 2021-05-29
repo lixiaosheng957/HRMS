@@ -131,7 +131,7 @@ def modify_training_people():
 @api.route('/delete-training-program', methods=['POST'])
 @login_required(['admin', 'hr'])
 def delete_training_program():
-    program_id = request.get_json()['programId']
+    program_id = request.get_json()['id']
     if not program_id:
         return ParameterException(msg="缺少项目ID")
     program = TrainingProgram.query.filter_by(id=program_id).first_or_404()

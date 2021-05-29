@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getEmployeeList(params) {
   return request({
-    url: '/employee/getlist',
+    url: '/api/employee/getlist',
     method: 'get',
     params: { ...params }
   })
@@ -10,7 +10,7 @@ export function getEmployeeList(params) {
 
 export function addEmployee(data) {
   return request({
-    url: '/employee/add',
+    url: '/api/employee/add',
     method: 'post',
     data: data
   })
@@ -18,7 +18,7 @@ export function addEmployee(data) {
 
 export function getEmployee(params) {
   return request({
-    url: '/employee/get-employee',
+    url: '/api/employee/get-employee',
     method: 'get',
     params: { ...params }
   })
@@ -26,7 +26,7 @@ export function getEmployee(params) {
 
 export function editEmployee(data) {
   return request({
-    url: '/employee/modify',
+    url: '/api/employee/modify',
     method: 'post',
     data: data
   })
@@ -34,7 +34,7 @@ export function editEmployee(data) {
 
 export function transfer(data) {
   return request({
-    url: '/employee/transfer',
+    url: '/api/employee/transfer',
     method: 'post',
     data: data
   })
@@ -42,7 +42,7 @@ export function transfer(data) {
 
 export function getTransferRecordsList(params) {
   return request({
-    url: '/employee/get-transfer-records',
+    url: '/api/employee/get-transfer-records',
     method: 'get',
     params: { ...params }
   })
@@ -50,7 +50,7 @@ export function getTransferRecordsList(params) {
 
 export function getTransferDetail(params) {
   return request({
-    url: '/employee/get-transfer-detail',
+    url: '/api/employee/get-transfer-detail',
     method: 'get',
     params: { ...params }
   })
@@ -58,7 +58,7 @@ export function getTransferDetail(params) {
 
 export function employeeMove(data) {
   return request({
-    url: '/employee/move',
+    url: '/api/employee/move',
     method: 'post',
     data: data
   })
@@ -66,7 +66,7 @@ export function employeeMove(data) {
 
 export function getEmployeeMoveList(params) {
   return request({
-    url: '/employee/get-employee-move-list',
+    url: '/api/employee/get-employee-move-list',
     method: 'get',
     params: { ...params }
   })
@@ -74,7 +74,7 @@ export function getEmployeeMoveList(params) {
 
 export function getEmployeeMoveDetail(params) {
   return request({
-    url: '/employee/get-employee-move-detail',
+    url: '/api/employee/get-employee-move-detail',
     method: 'get',
     params: { ...params }
   })
@@ -82,7 +82,7 @@ export function getEmployeeMoveDetail(params) {
 
 export function employeeRenew(data) {
   return request({
-    url: '/employee/renew',
+    url: '/api/employee/renew',
     method: 'post',
     data: data
   })
@@ -90,7 +90,7 @@ export function employeeRenew(data) {
 
 export function deleteEmployee(data) {
   return request({
-    url: '/employee/delete',
+    url: '/api/employee/delete',
     method: 'post',
     data: data
   })

@@ -10,7 +10,6 @@ class EmployeeMoveRecord(Base):
     moveTime = Column(Date)
     workTime = Column(String(32))
 
-
 class EmployeeMoveRecordSchema(Schema):
     id = fields.Int()
     employeeId = fields.Int()

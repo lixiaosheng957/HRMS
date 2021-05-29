@@ -1,0 +1,58 @@
+文件夹 PATH 列表
+卷序列号为 C412-31E7
+C:.
+│  .env
+│  config.py
+│  data-dev.sqlite
+│  manage.py
+│  requirements.txt
+│  run.py
+│  tree.txt
+│  
+├─app
+│  │  __init__.py
+│  │  
+│  ├─api
+│  │      department.py
+│  │      employee.py
+│  │      job_level.py
+│  │      operate_log.py
+│  │      statistics.py
+│  │      training.py
+│  │      user.py
+│  │      __init__.py
+│  │      
+│  ├─libs
+│  │      ajax_json.py
+│  │      enums.py
+│  │      expection.py
+│  │      log.py
+│  │      redprint.py
+│  │      request_status.py
+│  │      status_code.py
+│  │      token_auth.py
+│  │      __init__.py
+│  │      
+│  ├─models
+│  │      base.py
+│  │      department.py
+│  │      employee.py
+│  │      employee_move.py
+│  │      employee_training.py
+│  │      employee_transfer.py
+│  │      job_level.py
+│  │      menu.py
+│  │      opLog.py
+│  │      role.py
+│  │      training_program.py
+│  │      user.py
+│  │      __init__.py
+│  │      
+│  └─timed_task
+│          change_work_age.py
+│          check_traning_program_end.py
+│          __init__.py
+│          
+└─log
+        flask.log
+        

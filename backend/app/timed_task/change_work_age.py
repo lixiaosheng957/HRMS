@@ -4,7 +4,7 @@ from app.models.employee import Employee
 import datetime
 
 
-@scheduler.task('cron', id='do_job_check_training_program_end', hour='23', minute='03', second='00')
+@scheduler.task('cron', id='do_job_check_work_date', hour='23', minute='03', second='00')
 def change_work_age():
     today = datetime.date.today()
     employee_list = Employee.query.filter_by(workState="在职").all()

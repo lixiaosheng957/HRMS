@@ -34,6 +34,7 @@ def get_operate_log():
         operate_log_list_pagination = OperateLog.query.filter(
             and_(OperateLog.create_time >= time_str2timestamp(start_time),
                  OperateLog.create_time <= time_str2timestamp(end_time),
+                 OperateLog.operatorId == user_id,
                  OperateLog.status == 1)).paginate(
             page, per_page=page_size, error_out=False)
     elif operate_type and start_time and end_time:

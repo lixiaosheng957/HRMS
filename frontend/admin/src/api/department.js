@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getDepartments(parms) {
   return request({
-    url: '/department/get-department-list',
+    url: '/api/department/get-department-list',
     method: 'get',
     params: { ...parms }
   })
@@ -10,7 +10,7 @@ export function getDepartments(parms) {
 
 export function addDepartment(data) {
   return request({
-    url: '/department/add',
+    url: '/api/department/add',
     method: 'post',
     data: data
   })
@@ -18,7 +18,7 @@ export function addDepartment(data) {
 
 export function deleteDepartment(data) {
   return request({
-    url: '/department/delete',
+    url: '/api/department/delete',
     method: 'post',
     data: data
   })
@@ -26,7 +26,7 @@ export function deleteDepartment(data) {
 
 export function getDepartment(params) {
   return request({
-    url: '/department/get',
+    url: '/api/department/get',
     method: 'get',
     params
   })
@@ -34,7 +34,7 @@ export function getDepartment(params) {
 
 export function editDepartment(data) {
   return request({
-    url: '/department/modify',
+    url: '/api/department/modify',
     method: 'post',
     data: data
   })
